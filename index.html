@@ -1,0 +1,750 @@
+Вот полный HTML-файл для веб-приложения (Telegram Web App), которое работает как финансовый трекер с управлением по месяцам, категориями и копилкой.
+```html
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Финансовый трекер — Копилка и бюджет</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: #f1f5f9;
+            margin: 0;
+            padding: 20px 16px 40px;
+            color: #0f172a;
+        }
+
+        /* Главный контейнер — карточка приложения */
+        .app-container {
+            max-width: 550px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 2rem;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.05);
+            overflow: hidden;
+            padding: 20px 18px 28px;
+            transition: all 0.2s ease;
+        }
+
+        /* Шапка с месяцем и кнопками навигации */
+        .month-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #f8fafc;
+            padding: 10px 12px;
+            border-radius: 60px;
+            margin-bottom: 24px;
+            gap: 8px;
+        }
+
+        .month-name {
+            font-size: 1.6rem;
+            font-weight: 700;
+            background: white;
+            padding: 6px 18px;
+            border-radius: 40px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            min-width: 140px;
+            text-align: center;
+            letter-spacing: -0.3px;
+        }
+
+        .nav-btn {
+            background: white;
+            border: none;
+            font-size: 1.6rem;
+            font-weight: bold;
+            width: 48px;
+            height: 48px;
+            border-radius: 40px;
+            cursor: pointer;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            transition: 0.1s linear;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: #ffffff;
+        }
+
+        .nav-btn:active { transform: scale(0.96); background: #eef2ff; }
+
+        /* Баланс и копилка */
+        .balance-card {
+            background: linear-gradient(135deg, #1e293b, #0f172a);
+            color: white;
+            border-radius: 1.8rem;
+            padding: 16px 20px;
+            margin-bottom: 20px;
+        }
+
+        .balance-label {
+            font-size: 0.85rem;
+            opacity: 0.7;
+            letter-spacing: 0.5px;
+        }
+
+        .balance-amount {
+            font-size: 2.4rem;
+            font-weight: 800;
+            line-height: 1.2;
+            word-break: break-word;
+        }
+
+        .piggy-section {
+            background: #fef9e3;
+            border-radius: 1.5rem;
+            padding: 12px 18px;
+            margin-bottom: 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .piggy-title {
+            font-weight: 600;
+            color: #b45309;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .piggy-amount {
+            font-size: 1.7rem;
+            font-weight: 800;
+            color: #92400e;
+        }
+
+        /* Кнопки доходов */
+        .income-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .income-btn {
+            flex: 1;
+            background: #e6f0ff;
+            border: none;
+            border-radius: 60px;
+            padding: 12px 0;
+            font-weight: 600;
+            font-size: 1rem;
+            color: #0369a1;
+            cursor: pointer;
+            transition: 0.1s;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        }
+
+        .income-btn:active { background: #bdd3ff; transform: scale(0.97); }
+
+        /* Категории трат */
+        .categories-title {
+            font-weight: 600;
+            margin: 8px 0 12px 0;
+            font-size: 1.2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            flex-wrap: wrap;
+        }
+
+        .cat-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .small-btn {
+            background: #e2e8f0;
+            border: none;
+            border-radius: 40px;
+            padding: 6px 12px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            cursor: pointer;
+        }
+
+        .small-btn:active { background: #cbd5e1; }
+
+        .categories-list {
+            background: #f9f9fc;
+            border-radius: 1.5rem;
+            padding: 8px 12px;
+            margin-bottom: 20px;
+        }
+
+        .cat-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 8px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .cat-name {
+            font-weight: 500;
+            flex: 2;
+        }
+
+        .cat-amount {
+            font-family: monospace;
+            font-weight: 600;
+            background: white;
+            padding: 4px 12px;
+            border-radius: 40px;
+            min-width: 80px;
+            text-align: center;
+            border: 1px solid #cbd5e1;
+        }
+
+        .edit-cat, .del-cat {
+            background: none;
+            border: none;
+            font-size: 1.2rem;
+            cursor: pointer;
+            margin-left: 6px;
+            width: 32px;
+            height: 32px;
+            border-radius: 30px;
+        }
+
+        .edit-cat:active, .del-cat:active { background: #e2e8f0; }
+
+        .add-cat-row {
+            display: flex;
+            gap: 8px;
+            margin-top: 8px;
+            margin-bottom: 24px;
+        }
+
+        .add-cat-input {
+            flex: 1;
+            padding: 10px 12px;
+            border-radius: 60px;
+            border: 1px solid #cbd5e1;
+            background: white;
+        }
+
+        .primary-btn {
+            background: #0f172a;
+            color: white;
+            border: none;
+            border-radius: 40px;
+            padding: 0 18px;
+            font-weight: 500;
+            cursor: pointer;
+        }
+
+        .clear-month-btn {
+            background: #ffe4e2;
+            color: #b91c1c;
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 60px;
+            font-weight: 600;
+            margin-top: 8px;
+            font-size: 0.9rem;
+        }
+
+        .info-note {
+            font-size: 0.7rem;
+            color: #475569;
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        hr {
+            margin: 16px 0;
+            border-color: #e9eef3;
+        }
+    </style>
+</head>
+<body>
+<div class="app-container" id="financeApp">
+    <!-- Шапка месяц -->
+    <div class="month-header">
+        <button class="nav-btn" id="prevMonthBtn">◀</button>
+        <div class="month-name" id="monthNameDisplay">Январь</div>
+        <button class="nav-btn" id="nextMonthBtn">▶</button>
+    </div>
+
+    <!-- Баланс (остаток в выбранном месяце после трат) -->
+    <div class="balance-card">
+        <div class="balance-label">💰 Баланс месяца (доходы − траты)</div>
+        <div class="balance-amount" id="monthBalanceSpan">0 ₽</div>
+    </div>
+
+    <!-- Копилка (остатки после вычитания категорий) -->
+    <div class="piggy-section">
+        <span class="piggy-title">🐷 НАКОПЛЕНИЯ (копилка)</span>
+        <span class="piggy-amount" id="piggyTotalSpan">0 ₽</span>
+    </div>
+
+    <!-- Кнопки доходов -->
+    <div class="income-buttons">
+        <button class="income-btn" data-income-type="salary">💼 Зарплата</button>
+        <button class="income-btn" data-income-type="pension">👵 Пенсия</button>
+        <button class="income-btn" data-income-type="advance">📆 Аванс</button>
+    </div>
+
+    <!-- Категории трат + управление -->
+    <div class="categories-title">
+        <span>📋 Категории трат</span>
+        <div class="cat-actions">
+            <button class="small-btn" id="editModeBtn">✏️ Редактировать</button>
+            <button class="small-btn" id="deleteModeBtn">🗑 Удалить</button>
+        </div>
+    </div>
+
+    <div class="categories-list" id="categoriesContainer">
+        <!-- Динамический список категорий -->
+    </div>
+
+    <!-- Добавление категории -->
+    <div class="add-cat-row">
+        <input type="text" id="newCatName" class="add-cat-input" placeholder="Новая категория (например, Транспорт)" autocomplete="off">
+        <button id="addCategoryBtn" class="primary-btn">➕ Добавить</button>
+    </div>
+
+    <!-- Кнопка очистить месяц -->
+    <button id="clearMonthBtn" class="clear-month-btn">🗑 Очистить текущий месяц (обнулить доходы/траты)</button>
+    <div class="info-note">
+        ⚡ При пополнении (зарплата/пенсия/аванс): сумма распределяется по категориям трат (вычитается из дохода),<br>
+        остаток автоматически уходит в копилку. Редактируйте суммы категорий, они влияют на баланс и копилку!
+    </div>
+</div>
+
+<script>
+    // ---------- ХРАНИЛИЩЕ ДАННЫХ (localStorage) ----------
+    // Структура: 
+    // {
+    //   months: { "2025-0": { salary:0, pension:0, advance:0, categories: { "Еда":5000, ... }, piggy:0 } },
+    //   globalCategoriesOrder: ["Еда","Транспорт","Коммуналка","Развлечения"]  // базовые и пользовательские
+    // }
+    // piggy - накопления за всё время (общая копилка). Но по условию: при каждом пополнении остаток уходит в копилку.
+    // Уточнение: копилка общая (не по месяцам), накапливается сумма остатков после вычитания категорий.
+    // При переключении месяцев баланс отображается остаток по месяцу (доходы - траты по категориям). 
+    // Копилка — сумма всех остатков за все времена (накопления).
+
+    let appData = {
+        monthsData: {},       // key: "YYYY-M" 
+        globalCategories: []  // массив названий категорий (порядок)
+    };
+
+    const currentDate = new Date();
+    let currentYear = currentDate.getFullYear();
+    let currentMonth = currentDate.getMonth();  // 0-11
+
+    // DOM элементы
+    const monthNameSpan = document.getElementById('monthNameDisplay');
+    const monthBalanceSpan = document.getElementById('monthBalanceSpan');
+    const piggyTotalSpan = document.getElementById('piggyTotalSpan');
+    const categoriesContainer = document.getElementById('categoriesContainer');
+    const prevBtn = document.getElementById('prevMonthBtn');
+    const nextBtn = document.getElementById('nextMonthBtn');
+    const clearMonthBtn = document.getElementById('clearMonthBtn');
+    const addCategoryBtn = document.getElementById('addCategoryBtn');
+    const newCatNameInput = document.getElementById('newCatName');
+    const editModeBtn = document.getElementById('editModeBtn');
+    const deleteModeBtn = document.getElementById('deleteModeBtn');
+
+    // Режимы: null - просмотр/редакт сумм, 'edit' - редактирование названий, 'delete' - удаление категорий
+    let uiMode = null; 
+
+    // Загрузка / инициализация
+    function loadData() {
+        const saved = localStorage.getItem('finance_tracker_app');
+        if(saved) {
+            try {
+                const parsed = JSON.parse(saved);
+                appData.monthsData = parsed.monthsData || {};
+                appData.globalCategories = parsed.globalCategories || ["Еда", "Транспорт", "Коммуналка", "Развлечения"];
+            } catch(e) { console.warn(e); initDefault(); }
+        } else {
+            initDefault();
+        }
+        // убедимся что глобальные категории не пусты
+        if(!appData.globalCategories.length) appData.globalCategories = ["Еда", "Транспорт", "Коммуналка", "Развлечения"];
+        ensureCurrentMonthExists();
+    }
+
+    function initDefault() {
+        appData.globalCategories = ["Еда", "Транспорт", "Коммуналка", "Развлечения"];
+        appData.monthsData = {};
+        // создадим тестовый пример для текущего месяца с демо-категориями
+        const now = new Date();
+        const key = getMonthKey(now.getFullYear(), now.getMonth());
+        const defaultCats = {};
+        appData.globalCategories.forEach(cat => { defaultCats[cat] = 0; });
+        // для демо: установим еда 5000, транспорт 2000
+        if(appData.globalCategories.includes("Еда")) defaultCats["Еда"] = 5000;
+        if(appData.globalCategories.includes("Транспорт")) defaultCats["Транспорт"] = 2000;
+        appData.monthsData[key] = {
+            salary: 0,
+            pension: 0,
+            advance: 0,
+            categories: defaultCats,
+            piggy: 0    // не используется отдельно, копилка глобальная
+        };
+        // общая копилка хранится отдельно в общем объекте: добавляем поле totalPiggy
+        if(!appData.totalPiggy) appData.totalPiggy = 0;
+    }
+
+    function getMonthKey(year, month) {
+        return `${year}-${month}`;
+    }
+
+    function ensureCurrentMonthExists() {
+        const key = getMonthKey(currentYear, currentMonth);
+        if(!appData.monthsData[key]) {
+            const cats = {};
+            appData.globalCategories.forEach(c => { cats[c] = 0; });
+            appData.monthsData[key] = {
+                salary: 0,
+                pension: 0,
+                advance: 0,
+                categories: cats,
+            };
+        } else {
+            // синхронизируем категории: если добавили новые глобальные, а в месяце нет — добавим 0
+            const monthCats = appData.monthsData[key].categories || {};
+            let changed = false;
+            appData.globalCategories.forEach(cat => {
+                if(monthCats[cat] === undefined) {
+                    monthCats[cat] = 0;
+                    changed = true;
+                }
+            });
+            // удалим категории, которых нет в глобальных (если пользователь удалил)
+            for(let oldCat in monthCats) {
+                if(!appData.globalCategories.includes(oldCat)) {
+                    delete monthCats[oldCat];
+                    changed = true;
+                }
+            }
+            if(changed) appData.monthsData[key].categories = monthCats;
+        }
+        if(appData.totalPiggy === undefined) appData.totalPiggy = 0;
+        saveToLocal();
+    }
+
+    function saveToLocal() {
+        localStorage.setItem('finance_tracker_app', JSON.stringify({
+            monthsData: appData.monthsData,
+            globalCategories: appData.globalCategories,
+            totalPiggy: appData.totalPiggy
+        }));
+    }
+
+    // Получить текущий объект месяца
+    function getCurrentMonthData() {
+        const key = getMonthKey(currentYear, currentMonth);
+        if(!appData.monthsData[key]) {
+            ensureCurrentMonthExists();
+        }
+        return appData.monthsData[key];
+    }
+
+    // Вычислить общий доход за месяц (salary+pension+advance)
+    function totalIncome(monthData) {
+        return (monthData.salary || 0) + (monthData.pension || 0) + (monthData.advance || 0);
+    }
+
+    // Сумма всех категорий трат за месяц
+    function totalExpenses(monthData) {
+        let sum = 0;
+        const cats = monthData.categories || {};
+        for(let val of Object.values(cats)) {
+            sum += (typeof val === 'number' ? val : 0);
+        }
+        return sum;
+    }
+
+    // Баланс месяца (остаток, который показываем)
+    function monthBalance(monthData) {
+        return totalIncome(monthData) - totalExpenses(monthData);
+    }
+
+    // Обновить интерфейс: баланс месяца, копилку и список категорий
+    function refreshUI() {
+        const monthData = getCurrentMonthData();
+        const balance = monthBalance(monthData);
+        monthBalanceSpan.innerText = balance.toLocaleString('ru-RU') + ' ₽';
+
+        // Общая копилка
+        const piggyVal = appData.totalPiggy || 0;
+        piggyTotalSpan.innerText = piggyVal.toLocaleString('ru-RU') + ' ₽';
+
+        renderCategoriesList(monthData);
+        updateMonthNameDisplay();
+    }
+
+    // Отрисовка категорий с режимами
+    function renderCategoriesList(monthData) {
+        const cats = monthData.categories || {};
+        categoriesContainer.innerHTML = '';
+        for(let catName of appData.globalCategories) {
+            const amount = cats[catName] !== undefined ? cats[catName] : 0;
+            const div = document.createElement('div');
+            div.className = 'cat-item';
+            div.setAttribute('data-cat', catName);
+            
+            const nameSpan = document.createElement('span');
+            nameSpan.className = 'cat-name';
+            nameSpan.innerText = catName;
+            
+            const amountSpan = document.createElement('span');
+            amountSpan.className = 'cat-amount';
+            if(uiMode === 'edit') {
+                // Режим редактирования суммы (по умолчанию можно менять числа)
+                const input = document.createElement('input');
+                input.type = 'number';
+                input.value = amount;
+                input.style.width = '90px';
+                input.style.borderRadius = '30px';
+                input.style.padding = '6px 8px';
+                input.style.border = '1px solid #cbd5e1';
+                input.style.textAlign = 'center';
+                input.addEventListener('change', (e) => {
+                    let newVal = parseFloat(e.target.value);
+                    if(isNaN(newVal)) newVal = 0;
+                    updateCategoryAmount(catName, newVal);
+                });
+                amountSpan.appendChild(input);
+            } else {
+                amountSpan.innerText = amount.toLocaleString('ru-RU') + ' ₽';
+            }
+            
+            const actionsDiv = document.createElement('div');
+            if(uiMode === 'edit') {
+                // Кнопка для смены названия категории
+                const editNameBtn = document.createElement('button');
+                editNameBtn.innerText = '✎';
+                editNameBtn.className = 'edit-cat';
+                editNameBtn.title = 'Изменить название';
+                editNameBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const newName = prompt('Введите новое название категории:', catName);
+                    if(newName && newName.trim() && newName !== catName) {
+                        renameCategory(catName, newName.trim());
+                    }
+                });
+                actionsDiv.appendChild(editNameBtn);
+            } 
+            if(uiMode === 'delete') {
+                const delBtn = document.createElement('button');
+                delBtn.innerText = '❌';
+                delBtn.className = 'del-cat';
+                delBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    if(confirm(`Удалить категорию "${catName}"? Это сбросит её значения во всех месяцах.`)) {
+                        deleteCategory(catName);
+                    }
+                });
+                actionsDiv.appendChild(delBtn);
+            }
+            
+            // если нет режима удаления/переименования, можно просто редактировать суммы? дадим карандаш только в editMode
+            // но по заданию: есть кнопки редактировать категории (менять названия) и удалить, дополнительно меняем суммы из категорий всегда через клик?
+            // Упростим: в обычном режиме можно менять суммы кликом на сумму (удобно). Сделаем, чтобы по клику на сумму менялось значение.
+            if(uiMode !== 'edit') {
+                // обычный режим: клик на сумму для быстрого редактирования
+                amountSpan.style.cursor = 'pointer';
+                amountSpan.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    let newVal = prompt(`Введите сумму для категории "${catName}":`, amount);
+                    if(newVal !== null) {
+                        let num = parseFloat(newVal);
+                        if(isNaN(num)) num = 0;
+                        updateCategoryAmount(catName, num);
+                    }
+                });
+            }
+            
+            div.appendChild(nameSpan);
+            div.appendChild(amountSpan);
+            div.appendChild(actionsDiv);
+            categoriesContainer.appendChild(div);
+        }
+    }
+
+    // Обновление суммы категории и ПЕРЕРАСЧЕТ КОПИЛКИ
+    // При изменении любой категории общий баланс месяца меняется, но копилка не должна сама меняться —
+    // по условию: копилка пополняется только при нажатии "пришла зарплата/пенсия/аванс" из остатка.
+    // Однако если пользователь вручную поменял сумму категории — значит, он корректирует план трат. 
+    // Но существующие накопления (копилка) не должны меняться. Однако баланс месяца изменится, но копилка останется прежней.
+    // Наша логика: копилка — это накопления, которые уже были переведены. При ручной правке категории не трогаем копилку.
+    // Баланс месяца пересчитается, но копилка не изменяется.
+    function updateCategoryAmount(catName, newAmount) {
+        const monthData = getCurrentMonthData();
+        if(monthData.categories[catName] !== undefined) {
+            monthData.categories[catName] = newAmount;
+        } else {
+            monthData.categories[catName] = newAmount;
+        }
+        saveToLocal();
+        refreshUI();
+    }
+
+    function renameCategory(oldName, newName) {
+        if(oldName === newName) return;
+        if(appData.globalCategories.includes(newName)) {
+            alert('Категория с таким именем уже существует!');
+            return;
+        }
+        const idx = appData.globalCategories.indexOf(oldName);
+        if(idx !== -1) appData.globalCategories[idx] = newName;
+        // переименовываем во всех месяцах
+        for(let key in appData.monthsData) {
+            const month = appData.monthsData[key];
+            if(month.categories && month.categories[oldName] !== undefined) {
+                month.categories[newName] = month.categories[oldName];
+                delete month.categories[oldName];
+            }
+        }
+        saveToLocal();
+        refreshUI();
+    }
+
+    function deleteCategory(catName) {
+        const idx = appData.globalCategories.indexOf(catName);
+        if(idx !== -1) appData.globalCategories.splice(idx,1);
+        for(let key in appData.monthsData) {
+            if(appData.monthsData[key].categories && appData.monthsData[key].categories[catName] !== undefined) {
+                delete appData.monthsData[key].categories[catName];
+            }
+        }
+        saveToLocal();
+        refreshUI();
+    }
+
+    function addNewCategory() {
+        let name = newCatNameInput.value.trim();
+        if(!name) return alert('Введите название категории');
+        if(appData.globalCategories.includes(name)) return alert('Такая категория уже есть');
+        appData.globalCategories.push(name);
+        // инициализируем во всех существующих месяцах нулем
+        for(let key in appData.monthsData) {
+            if(!appData.monthsData[key].categories) appData.monthsData[key].categories = {};
+            appData.monthsData[key].categories[name] = 0;
+        }
+        ensureCurrentMonthExists();
+        newCatNameInput.value = '';
+        saveToLocal();
+        refreshUI();
+    }
+
+    // Добавление дохода (зарплата/пенсия/аванс)
+    function addIncome(type, amountValue) {
+        let amount = parseFloat(prompt(`Введите сумму ${type === 'salary' ? 'ЗАРПЛАТЫ' : type === 'pension' ? 'ПЕНСИИ' : 'АВАНСА'}:`, "0"));
+        if(isNaN(amount) || amount <= 0) {
+            if(amount <=0) alert('Сумма должна быть больше нуля');
+            return;
+        }
+        const monthData = getCurrentMonthData();
+        // Обновляем доход конкретного типа
+        if(type === 'salary') monthData.salary = (monthData.salary || 0) + amount;
+        else if(type === 'pension') monthData.pension = (monthData.pension || 0) + amount;
+        else if(type === 'advance') monthData.advance = (monthData.advance || 0) + amount;
+        
+        // Вычисляем остаток: сумма дохода (теперь уже увеличенного) - сумма категорий
+        const newTotalIncome = totalIncome(monthData);
+        const expenses = totalExpenses(monthData);
+        let remainder = newTotalIncome - expenses;
+        // Если остаток отрицательный? По логике, траты могут превышать доходы, но копилка не должна уходить в минус
+        // По заданию: остаток отправляется в копилку. Если расходы больше дохода, то копилка не пополняется и даже может быть отрицательной? 
+        // но корректнее: копилка увеличивается только на положительный остаток, либо пусть будет ноль.
+        if(remainder > 0) {
+            appData.totalPiggy = (appData.totalPiggy || 0) + remainder;
+        } else {
+            // Если траты больше, то копилка не меняется, а баланс месяца отрицательный — показываем долг.
+            // Ничего не добавляем.
+        }
+        saveToLocal();
+        refreshUI();
+    }
+
+    function clearCurrentMonth() {
+        if(confirm(`Очистить все доходы и обнулить суммы категорий в ${getMonthName(currentYear, currentMonth)}? Копилка НЕ обнулится.`)) {
+            const key = getMonthKey(currentYear, currentMonth);
+            const freshCats = {};
+            appData.globalCategories.forEach(c => { freshCats[c] = 0; });
+            appData.monthsData[key] = {
+                salary: 0,
+                pension: 0,
+                advance: 0,
+                categories: freshCats,
+            };
+            saveToLocal();
+            refreshUI();
+        }
+    }
+
+    function getMonthName(year, month) {
+        const names = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'];
+        return `${names[month]} ${year}`;
+    }
+
+    function updateMonthNameDisplay() {
+        monthNameSpan.innerText = getMonthName(currentYear, currentMonth);
+    }
+
+    function changeMonth(delta) {
+        let newMonth = currentMonth + delta;
+        let newYear = currentYear;
+        if(newMonth < 0) { newMonth = 11; newYear--; }
+        else if(newMonth > 11) { newMonth = 0; newYear++; }
+        currentYear = newYear;
+        currentMonth = newMonth;
+        ensureCurrentMonthExists();
+        refreshUI();
+    }
+
+    // Инициализация событий
+    function bindEvents() {
+        prevBtn.onclick = () => changeMonth(-1);
+        nextBtn.onclick = () => changeMonth(1);
+        clearMonthBtn.onclick = clearCurrentMonth;
+        addCategoryBtn.onclick = addNewCategory;
+        document.querySelectorAll('.income-btn').forEach(btn => {
+            btn.onclick = (e) => {
+                const type = btn.getAttribute('data-income-type');
+                addIncome(type, 0);
+            };
+        });
+        editModeBtn.onclick = () => {
+            if(uiMode === 'edit') uiMode = null;
+            else uiMode = 'edit';
+            deleteModeBtn.style.opacity = uiMode === 'delete' ? '0.6' : '1';
+            editModeBtn.style.opacity = uiMode === 'edit' ? '0.6' : '1';
+            refreshUI();
+        };
+        deleteModeBtn.onclick = () => {
+            if(uiMode === 'delete') uiMode = null;
+            else uiMode = 'delete';
+            editModeBtn.style.opacity = uiMode === 'edit' ? '0.6' : '1';
+            deleteModeBtn.style.opacity = uiMode === 'delete' ? '0.6' : '1';
+            refreshUI();
+        };
+    }
+
+    function init() {
+        loadData();
+        bindEvents();
+        refreshUI();
+    }
+    init();
+</script>
+</body>
+</html>
+```
