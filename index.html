@@ -1,608 +1,547 @@
+Вот готовый веб-приложение для перевода VK Coin через Telegram с админ-панелью, где права выдаются через username в коде.
+
+```html
 <!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Автоперекуп: Купи-Отремонти-Продай</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>VK Coin Transfer — Telegram App</title>
+    <!-- Telegram Web App SDK -->
+    <script src="https://telegram.org/js/telegram-web-app.js?56"></script>
+    <!-- Основные стили для современного веб-приложения -->
     <style>
         * {
-            box-sizing: border-box;
-            user-select: none;
-        }
-
-        body {
-            background: linear-gradient(135deg, #0f2b1d 0%, #1a3a2a 100%);
-            font-family: 'Segoe UI', system-ui, -apple-system, 'Roboto', sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
             margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+        }
+        body {
+            background: var(--tg-theme-bg-color, #ffffff);
+            color: var(--tg-theme-text-color, #000000);
+            padding: 20px 16px 32px;
+            min-height: 100vh;
+            transition: background 0.2s ease;
+        }
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+        }
+        .card {
+            background: var(--tg-theme-secondary-bg-color, #f5f5f5);
+            border-radius: 24px;
             padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            transition: background 0.2s;
         }
-
-        .game-container {
-            max-width: 1300px;
-            width: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            backdrop-filter: blur(3px);
-            border-radius: 56px;
-            padding: 24px;
-            box-shadow: 0 20px 35px rgba(0, 0, 0, 0.5);
-            border: 1px solid rgba(255, 200, 100, 0.4);
-        }
-
-        .status-bar {
-            background: #0a1a15;
-            border-radius: 60px;
-            padding: 18px 30px;
-            margin-bottom: 25px;
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: space-between;
-            align-items: center;
-            gap: 20px;
-            box-shadow: 0 5px 12px rgba(0, 0, 0, 0.3);
-            border-bottom: 3px solid #f5b642;
-        }
-
-        .stat {
-            background: #00000055;
-            padding: 8px 24px;
-            border-radius: 40px;
-            display: flex;
-            align-items: baseline;
-            gap: 12px;
-            font-weight: bold;
-        }
-
-        .stat-label {
-            font-size: 0.9rem;
-            letter-spacing: 1px;
-            color: #bbddcc;
-        }
-
-        .stat-value {
-            font-size: 1.9rem;
-            font-weight: 800;
-            color: #ffda88;
-            text-shadow: 0 2px 3px black;
-        }
-
-        .money {
-            color: #f5b042;
-        }
-
-        .day-box {
-            background: #2a2418;
-        }
-
-        .section-title {
-            font-size: 1.5rem;
-            font-weight: bold;
-            margin-left: 12px;
-            margin-bottom: 18px;
-            color: #ffe2b5;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            border-left: 6px solid #ffaa44;
-            padding-left: 20px;
-        }
-
-        .cars-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 22px;
-        }
-
-        .car-card {
-            background: linear-gradient(145deg, #2a3a2c, #1c2a1e);
-            border-radius: 32px;
-            padding: 18px;
-            transition: 0.2s ease;
-            box-shadow: 0 8px 18px rgba(0, 0, 0, 0.4);
-            border: 1px solid rgba(245, 180, 80, 0.5);
-        }
-
-        .car-card:hover {
-            transform: translateY(-4px);
-            border-color: #ffbc5e;
-        }
-
-        .car-name {
-            font-size: 1.6rem;
-            font-weight: 800;
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 12px;
-            color: #f5e7c8;
-        }
-
-        .car-price {
-            background: #00000066;
-            border-radius: 28px;
-            padding: 8px 15px;
-            display: inline-block;
-            margin: 8px 0;
-            font-weight: bold;
-        }
-
-        .price-number {
-            font-size: 1.6rem;
-            font-weight: 800;
-            margin-left: 8px;
-            color: #ffb84d;
-        }
-
-        .car-stats {
-            display: flex;
-            justify-content: space-between;
-            margin: 15px 0;
-            background: #00000044;
-            border-radius: 28px;
-            padding: 10px 12px;
-        }
-
-        .stat-badge {
-            text-align: center;
-        }
-
-        .stat-badge span:first-child {
-            font-size: 0.7rem;
-            text-transform: uppercase;
-            color: #b9d0b0;
-        }
-
-        .stat-badge span:last-child {
-            font-size: 1.2rem;
-            font-weight: bold;
-            display: block;
-            color: #f5bc70;
-        }
-
-        .actions {
-            display: flex;
-            gap: 12px;
-            margin-top: 16px;
-        }
-
-        button {
-            flex: 1;
-            padding: 12px 0;
-            font-weight: bold;
-            border: none;
-            border-radius: 40px;
-            font-size: 0.9rem;
+        h1 {
+            font-size: 1.8rem;
             font-weight: 700;
-            cursor: pointer;
-            transition: 0.08s linear;
-            background: #3d5a3c;
-            color: #f9eec1;
-            box-shadow: 0 2px 5px black;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
-
-        button:active {
-            transform: scale(0.97);
+        h2 {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 16px;
         }
-
-        .buy-btn {
-            background: #2e7d32;
-            color: white;
-            box-shadow: 0 3px 0 #1b5e20;
-        }
-
-        .sell-btn {
-            background: #b6512e;
-            box-shadow: 0 3px 0 #6d2e0e;
-        }
-
-        .repair-btn {
-            background: #5a6b2f;
-            color: #fff0c0;
-            box-shadow: 0 3px 0 #3a471a;
-        }
-
-        .market-news {
-            background: #131f1be0;
-            border-radius: 36px;
-            padding: 12px 20px;
-            margin-bottom: 25px;
+        .balance-box {
+            background: var(--tg-theme-button-color, #3390ec);
+            color: var(--tg-theme-button-text-color, #ffffff);
+            border-radius: 28px;
+            padding: 16px 20px;
             text-align: center;
+            margin-bottom: 20px;
         }
-
-        .next-day-btn {
-            background: #d9a13b;
-            padding: 12px 25px;
-            font-size: 1.1rem;
-            color: #1f2e1c;
-            box-shadow: 0 4px 0 #7e5822;
-            margin-top: 5px;
-            min-width: 180px;
+        .balance-box span {
+            font-size: 2rem;
+            font-weight: 800;
+            display: block;
         }
-
-        .inventory {
-            background: #1d2a28aa;
-            border-radius: 32px;
-            padding: 15px 20px;
-            text-align: center;
-            font-size: 1rem;
-            color: #eeddbb;
-        }
-
-        .empty-message {
+        .label {
+            font-size: 0.85rem;
             opacity: 0.7;
-            font-style: italic;
+            margin-bottom: 6px;
+            font-weight: 500;
         }
-
-        .profit-badge {
-            background: #00000055;
-            border-radius: 20px;
-            padding: 5px 10px;
+        input, select, button {
+            width: 100%;
+            padding: 14px 16px;
+            font-size: 1rem;
+            border-radius: 16px;
+            border: none;
+            background: var(--tg-theme-bg-color, #ffffff);
+            color: var(--tg-theme-text-color, #000000);
+            margin-bottom: 14px;
+            outline: none;
+            transition: 0.2s;
+        }
+        input, select {
+            border: 1px solid var(--tg-theme-hint-color, #cccccc);
+            background: var(--tg-theme-bg-color, #ffffff);
+        }
+        button {
+            background: var(--tg-theme-button-color, #3390ec);
+            color: var(--tg-theme-button-text-color, #ffffff);
+            font-weight: 600;
+            cursor: pointer;
+            margin-bottom: 8px;
+            transition: opacity 0.2s;
+        }
+        button:active {
+            opacity: 0.8;
+        }
+        .danger-btn {
+            background: #e53935;
+        }
+        .info-text {
             font-size: 0.8rem;
-            margin-top: 8px;
+            color: var(--tg-theme-hint-color, #6c6c6c);
+            margin-top: 4px;
             text-align: center;
         }
-
-        .profit-positive {
-            color: #a5f0a5;
-        }
-
-        footer {
-            font-size: 0.7rem;
-            text-align: center;
+        .admin-panel {
+            border-top: 2px dashed var(--tg-theme-hint-color, #ddd);
             margin-top: 20px;
-            color: #c0d6cc;
+            padding-top: 20px;
         }
-
-        @media (max-width: 700px) {
-            .cars-grid {
-                grid-template-columns: 1fr;
-            }
-            .stat-value {
-                font-size: 1.2rem;
-            }
-            .car-name {
-                font-size: 1.3rem;
-            }
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 40px;
+            font-size: 0.9rem;
+            z-index: 1000;
+            pointer-events: none;
+            transition: 0.2s;
+            opacity: 0;
+        }
+        .row {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+        .row button {
+            margin-bottom: 0;
+        }
+        hr {
+            margin: 16px 0;
+            border-color: var(--tg-theme-hint-color, #eee);
+        }
+        .username-badge {
+            background: var(--tg-theme-button-color, #3390ec20);
+            padding: 6px 12px;
+            border-radius: 40px;
+            font-size: 0.8rem;
+            display: inline-block;
+        }
+        @media (prefers-color-scheme: dark) {
+            body { background: #0f0f0f; }
         }
     </style>
 </head>
 <body>
-<div class="game-container">
-    <div class="status-bar">
-        <div class="stat"><span class="stat-label">💰 КАПИТАЛ</span><span class="stat-value money" id="moneyDisplay">0</span></div>
-        <div class="stat"><span class="stat-label">📅 ДЕНЬ</span><span class="stat-value" id="dayDisplay">1</span></div>
-        <div class="stat"><span class="stat-label">🚗 В ГАРАЖЕ</span><span class="stat-value" id="garageCount">0</span></div>
+<div class="container">
+    <!-- главный блок баланса и перевода -->
+    <div class="card" style="text-align: center;">
+        <h1>💎 VK Coin</h1>
+        <div class="balance-box" id="balanceBox">
+            <div class="label">Ваш баланс</div>
+            <span id="userBalance">—</span>
+            <div style="font-size:0.7rem; margin-top:6px;">⚡ VK Coin</div>
+        </div>
+        <div class="label">👤 Telegram ID: <span id="telegramUserId">загрузка...</span></div>
+        <div class="label">🔹 Username: @<span id="telegramUsername">—</span></div>
     </div>
 
-    <div class="market-news">
-        <div id="newsMessage" style="font-size: 1rem; font-weight: 500; color: #ffefcf;">Простая схема: Покупай → Ремонтируй → Продавай в плюс! Каждый день рынок обновляется.</div>
-        <button class="next-day-btn" id="nextDayBtn">➡ НОВЫЙ ДЕНЬ (обновление рынка)</button>
+    <!-- форма перевода -->
+    <div class="card">
+        <h2>📤 Перевод монет</h2>
+        <div class="label">👥 Получатель (username Telegram)</div>
+        <input type="text" id="recipientUsername" placeholder="@username или username" autocomplete="off">
+        <div class="label">💰 Сумма (VK Coin)</div>
+        <input type="number" id="amount" placeholder="Количество монет" min="1" step="1">
+        <button id="sendBtn">🚀 Отправить перевод</button>
+        <div class="info-text">Комиссия отсутствует. Перевод между пользователями VK Coin внутри приложения.</div>
     </div>
 
-    <div style="margin-bottom: 20px;">
-        <div class="section-title">🚘 МАШИНЫ НА ПРОДАЖУ</div>
-        <div class="cars-grid" id="marketGrid"></div>
+    <!-- Админ-панель (показывается только если текущий username в списке админов) -->
+    <div id="adminPanelWrapper" style="display: none;">
+        <div class="card admin-panel">
+            <h2>🛡️ Админ-панель</h2>
+            <div class="label">➕ Пополнить баланс пользователя</div>
+            <input type="text" id="adminTargetUser" placeholder="Username получателя">
+            <input type="number" id="adminAmount" placeholder="Сумма (VK Coin)">
+            <button id="adminAddCoinsBtn">💎 Выдать монеты</button>
+            <hr>
+            <div class="label">📋 Управление пользователями (список)</div>
+            <button id="adminShowUsersBtn">👥 Показать всех пользователей</button>
+            <pre id="usersListPreview" style="background: var(--tg-theme-bg-color); padding: 10px; border-radius: 16px; margin-top: 10px; font-size: 12px; overflow-x: auto;"></pre>
+            <hr>
+            <div class="label">⚠️ Сброс базы данных (тестовая очистка)</div>
+            <button id="adminResetDbBtn" class="danger-btn">🗑️ СБРОС ВСЕХ ДАННЫХ</button>
+            <div class="info-text">Внимание! Сбросит балансы всех пользователей.</div>
+        </div>
     </div>
 
-    <div>
-        <div class="section-title">🏁 ТВОИ АВТО (ремонтируй и продавай)</div>
-        <div id="inventoryContainer" class="inventory">Загрузка...</div>
-    </div>
-    <footer>⚙️ РЕМОНТ повышает состояние на 7-12% и увеличивает цену. Продавай когда цена выгодная! Без лишних сложностей.</footer>
+    <div class="info-text" style="margin-top: 20px;">⚡ VK Coin Demo — переводы между пользователями через Telegram.</div>
 </div>
+<div id="toastMsg" class="toast">Сообщение</div>
 
 <script>
-    // -------- ПРОСТАЯ ИГРА: ПОКУПКА -> РЕМОНТ -> ПРОДАЖА В ПЛЮС ----------
-    const CAR_MODELS = [
-        { name: "Lada Granta", baseValue: 320, condMin: 0.65, condMax: 0.92 },
-        { name: "Hyundai Solaris", baseValue: 680, condMin: 0.70, condMax: 0.95 },
-        { name: "Kia Rio", baseValue: 650, condMin: 0.68, condMax: 0.96 },
-        { name: "Volkswagen Polo", baseValue: 720, condMin: 0.72, condMax: 0.94 },
-        { name: "Toyota Corolla", baseValue: 1150, condMin: 0.75, condMax: 0.97 },
-        { name: "Mazda 6", baseValue: 1320, condMin: 0.70, condMax: 0.95 },
-        { name: "BMW 3 series", baseValue: 1980, condMin: 0.68, condMax: 0.93 },
-        { name: "Mercedes C-class", baseValue: 2050, condMin: 0.65, condMax: 0.94 },
-        { name: "Renault Duster", baseValue: 890, condMin: 0.72, condMax: 0.98 },
-        { name: "Nissan Qashqai", baseValue: 1250, condMin: 0.70, condMax: 0.96 }
-    ];
+    // --------------------------------------------------------------
+    //  ⚙️ КОНФИГУРАЦИЯ АДМИНОВ: укажите username (без @) кому дать админку
+    // --------------------------------------------------------------
+    const ALLOWED_ADMIN_USERNAMES = ['Dcorpious', 'admin', 'vkcoin'];  // 👈 ЗДЕСЬ УКАЖИТЕ USERNAME АДМИНОВ (ЛАДИНИЦА, БЕЗ @)
+    // Пример: если ваш Telegram юзернейм @myadmin, добавьте 'myadmin' в массив.
+    // --------------------------------------------------------------
 
-    // Автомобиль
-    class Car {
-        constructor(modelTemplate, marketFactor) {
-            this.id = Math.random() + Date.now() + Math.random();
-            this.model = modelTemplate.name;
-            this.baseValue = modelTemplate.baseValue;
-            // состояние от 0.6 до 0.95
-            let condMin = modelTemplate.condMin;
-            let condMax = modelTemplate.condMax;
-            this.condition = parseFloat((Math.random() * (condMax - condMin) + condMin).toFixed(2));
-            this.purchasePrice = null;   // цена покупки
-            this.currentPrice = this.calcPrice(marketFactor);
+    // --- Глобальное хранилище (имитация базы данных через localStorage) ---
+    // Структура: users = { "username": { balance: number, lastSeen: timestamp } }
+    let usersStore = {};
+
+    // Загрузка / инициализация хранилища
+    function loadStore() {
+        const raw = localStorage.getItem('vkcoin_app_users');
+        if (raw) {
+            try {
+                usersStore = JSON.parse(raw);
+            } catch(e) { usersStore = {}; }
         }
-
-        calcPrice(marketFactor) {
-            // цена = базовая * состояние * (0.9..1.1 волатильность) * рыночный множитель
-            let baseMarket = this.baseValue * this.condition;
-            let variation = 0.85 + Math.random() * 0.5;   // 0.85 - 1.35
-            let raw = baseMarket * variation * marketFactor;
-            return Math.max(180, Math.floor(raw));
-        }
-
-        refreshPrice(marketFactor) {
-            this.currentPrice = this.calcPrice(marketFactor);
-            return this.currentPrice;
-        }
-
-        // ремонт увеличивает состояние и цену
-        repair(marketFactor) {
-            let increase = 0.07 + Math.random() * 0.08;  // 7-15%
-            let newCond = Math.min(0.99, this.condition + increase);
-            let improvement = newCond - this.condition;
-            this.condition = parseFloat(newCond.toFixed(2));
-            let oldPrice = this.currentPrice;
-            this.currentPrice = this.calcPrice(marketFactor);
-            return {
-                success: true,
-                improvement: improvement,
-                oldPrice: oldPrice,
-                newPrice: this.currentPrice
-            };
+        // Если пусто, создадим тестового пользователя для демо
+        if (Object.keys(usersStore).length === 0) {
+            // демо: добавим пару фейковых юзеров для примера (не админы)
+            usersStore['alice'] = { balance: 1500, lastSeen: Date.now() };
+            usersStore['bob'] = { balance: 800, lastSeen: Date.now() };
+            usersStore['durov'] = { balance: 50000, lastSeen: Date.now() };  // admin пример
+            saveStore();
         }
     }
 
-    // Игровой менеджер (без лишних случайных налогов)
-    class GameDealer {
-        constructor() {
-            this.money = 3800;           // стартовый капитал
-            this.day = 1;
-            this.myCars = [];
-            this.marketCars = [];
-            this.marketTrend = 1.0;
-        }
+    function saveStore() {
+        localStorage.setItem('vkcoin_app_users', JSON.stringify(usersStore));
+    }
 
-        // генерация рыночного коэффициента (от 0.75 до 1.45)
-        generateMarketFactor() {
-            // плавные колебания без экстрима
-            let factor = 0.78 + Math.random() * 0.7;
-            this.marketTrend = parseFloat(factor.toFixed(2));
-            return this.marketTrend;
+    // Получить баланс пользователя (если нет - создает с нулем)
+    function getUserBalance(username) {
+        const normalized = username.toLowerCase();
+        if (!usersStore[normalized]) {
+            usersStore[normalized] = { balance: 0, lastSeen: Date.now() };
+            saveStore();
         }
+        return usersStore[normalized].balance;
+    }
 
-        // обновить рынок: новые автомобили
-        refreshMarket() {
-            let carCount = 5 + Math.floor(Math.random() * 4); // 5-8 машин
-            let newMarket = [];
-            let shuffled = [...CAR_MODELS];
-            for (let i = 0; i < carCount; i++) {
-                let template = shuffled[Math.floor(Math.random() * shuffled.length)];
-                let car = new Car(template, this.marketTrend);
-                newMarket.push(car);
-            }
-            this.marketCars = newMarket;
+    // Установить баланс (приватно)
+    function setUserBalance(username, newBalance) {
+        const normalized = username.toLowerCase();
+        if (!usersStore[normalized]) {
+            usersStore[normalized] = { balance: 0, lastSeen: Date.now() };
         }
+        usersStore[normalized].balance = Math.max(0, Math.floor(newBalance));
+        usersStore[normalized].lastSeen = Date.now();
+        saveStore();
+    }
 
-        // переоценить гараж
-        reevaluateGarage() {
-            for (let car of this.myCars) {
-                car.refreshPrice(this.marketTrend);
-            }
+    // Добавить монеты пользователю
+    function addCoinsToUser(username, amount) {
+        if (amount <= 0) return false;
+        const cur = getUserBalance(username);
+        setUserBalance(username, cur + amount);
+        return true;
+    }
+
+    // Перевести монеты: отправитель (senderUsername) -> получатель (recipientUsername), сумма
+    function transferCoins(senderUsername, recipientUsername, amount) {
+        const senderNorm = senderUsername.toLowerCase();
+        const recipientNorm = recipientUsername.toLowerCase();
+        if (senderNorm === recipientNorm) {
+            return { success: false, message: "Нельзя перевести самому себе" };
         }
+        if (amount <= 0 || !Number.isInteger(amount)) {
+            return { success: false, message: "Сумма должна быть положительным целым числом" };
+        }
+        const senderBal = getUserBalance(senderNorm);
+        if (senderBal < amount) {
+            return { success: false, message: `Недостаточно средств. Ваш баланс: ${senderBal} VK Coin` };
+        }
+        // выполняем перевод
+        setUserBalance(senderNorm, senderBal - amount);
+        addCoinsToUser(recipientNorm, amount);
+        return { success: true, message: `Успешно! Переведено ${amount} монет пользователю @${recipientUsername}` };
+    }
 
-        // покупка
-        buyCar(index) {
-            if (index < 0 || index >= this.marketCars.length) {
-                return { success: false, msg: "Ошибка" };
-            }
-            const car = this.marketCars[index];
-            if (this.money >= car.currentPrice) {
-                this.money -= car.currentPrice;
-                // создаем машину с фиксацией цены покупки
-                const newCar = new Car({ name: car.model, baseValue: car.baseValue, condMin: car.condition, condMax: car.condition }, this.marketTrend);
-                newCar.condition = car.condition;
-                newCar.currentPrice = car.currentPrice;
-                newCar.purchasePrice = car.currentPrice;
-                newCar.id = car.id;
-                this.myCars.push(newCar);
-                this.marketCars.splice(index, 1);
-                return { success: true, msg: `✅ Купил ${newCar.model} за ${newCar.currentPrice}₽. Состояние: ${(newCar.condition*100).toFixed(0)}%` };
+    // --- Telegram WebApp логика ---
+    let tg = window.Telegram.WebApp;
+    let currentUser = {
+        id: null,
+        username: null,
+        first_name: ''
+    };
+
+    // Инициализация Telegram Data
+    function initTelegramUser() {
+        tg.expand();  // разворачиваем на весь экран
+        tg.enableClosingConfirmation();
+        const user = tg.initDataUnsafe?.user;
+        if (user) {
+            currentUser.id = user.id;
+            currentUser.username = user.username ? user.username.toLowerCase() : null;
+            currentUser.first_name = user.first_name || '';
+            document.getElementById('telegramUserId').innerText = user.id;
+            document.getElementById('telegramUsername').innerText = currentUser.username ? currentUser.username : 'нет username';
+        } else {
+            // Демо-режим (для теста внутри браузера без Telegram)
+            currentUser.id = 123456789;
+            currentUser.username = 'demouser';
+            currentUser.first_name = 'Demo';
+            document.getElementById('telegramUserId').innerText = '123456789 (демо)';
+            document.getElementById('telegramUsername').innerText = 'demouser (тестовый)';
+        }
+        // Гарантируем, что юзер существует в хранилище
+        if (currentUser.username) {
+            getUserBalance(currentUser.username);
+        } else {
+            // если нет username, используем ID как фоллбэк (но лучше предупредить)
+            if (currentUser.id) {
+                const fallbackName = `id_${currentUser.id}`;
+                currentUser.username = fallbackName;
+                getUserBalance(fallbackName);
+                document.getElementById('telegramUsername').innerText = fallbackName + " (авто)";
             } else {
-                return { success: false, msg: `❌ Не хватает ${car.currentPrice}₽. Заработай на ремонте и продаже!` };
+                // абсолютный фоллбэк
+                currentUser.username = 'guest';
+                getUserBalance('guest');
             }
         }
+        updateBalanceUI();
+    }
 
-        // продажа
-        sellCar(index) {
-            if (index < 0 || index >= this.myCars.length) {
-                return { success: false, msg: "Машина не найдена" };
-            }
-            const car = this.myCars[index];
-            const sellPrice = car.currentPrice;
-            const bought = car.purchasePrice || sellPrice;
-            const profit = sellPrice - bought;
-            this.money += sellPrice;
-            this.myCars.splice(index, 1);
-            if (profit >= 0) {
-                return { success: true, msg: `💰 ПРОДАЛ ${car.model} за ${sellPrice}₽! Чистая прибыль: +${profit}₽` };
-            } else {
-                return { success: true, msg: `⚠️ ПРОДАЛ ${car.model} за ${sellPrice}₽. Убыток: ${profit}₽ (лучше отремонтировать перед продажей!)` };
-            }
+    // обновление отображения баланса
+    function updateBalanceUI() {
+        if (currentUser.username) {
+            const bal = getUserBalance(currentUser.username);
+            document.getElementById('userBalance').innerText = bal.toLocaleString();
+        } else {
+            document.getElementById('userBalance').innerText = '0';
         }
+    }
 
-        // ремонт машины (увеличивает состояние и цену)
-        repairCar(index) {
-            if (index < 0 || index >= this.myCars.length) {
-                return { success: false, msg: "Авто не в гараже" };
+    // Показать уведомление (тост)
+    function showToast(message, isError = false) {
+        const toast = document.getElementById('toastMsg');
+        toast.innerText = message;
+        toast.style.backgroundColor = isError ? '#e53935' : '#2b2b2b';
+        toast.style.opacity = '1';
+        setTimeout(() => {
+            toast.style.opacity = '0';
+        }, 2800);
+        // также дадим вибрацию если доступно и ошибка
+        if (isError && tg.HapticFeedback) {
+            tg.HapticFeedback.notificationOccurred('error');
+        } else if (tg.HapticFeedback) {
+            tg.HapticFeedback.notificationOccurred('success');
+        }
+    }
+
+    // Проверка админ-прав: текущий username присутствует в ALLOWED_ADMIN_USERNAMES
+    function isCurrentUserAdmin() {
+        if (!currentUser.username) return false;
+        const rawUsername = currentUser.username.toLowerCase().replace(/^@/, '');
+        return ALLOWED_ADMIN_USERNAMES.includes(rawUsername);
+    }
+
+    // Показать / скрыть админ панель
+    function toggleAdminPanel() {
+        const panel = document.getElementById('adminPanelWrapper');
+        if (isCurrentUserAdmin()) {
+            panel.style.display = 'block';
+            // Дополнительно выведем красивую метку
+            const adminBadge = document.createElement('div');
+            // но можно проще: добавим сообщение, но не спамим
+        } else {
+            panel.style.display = 'none';
+        }
+    }
+
+    // Админские функции:
+    function adminShowAllUsers() {
+        if (!isCurrentUserAdmin()) {
+            showToast("Доступ запрещен: недостаточно прав", true);
+            return;
+        }
+        const usersList = Object.entries(usersStore).map(([uname, data]) => {
+            return `@${uname}: ${data.balance} VKCoin (последняя активность: ${new Date(data.lastSeen).toLocaleString()})`;
+        }).join('\n');
+        const previewEl = document.getElementById('usersListPreview');
+        if (usersList.length === 0) {
+            previewEl.innerText = 'Нет пользователей в базе.';
+        } else {
+            previewEl.innerText = usersList;
+        }
+        showToast(`Загружено ${Object.keys(usersStore).length} пользователей`);
+    }
+
+    function adminAddCoins(targetUsernameRaw, amountRaw) {
+        if (!isCurrentUserAdmin()) {
+            showToast("Админ-доступ запрещен", true);
+            return false;
+        }
+        let target = targetUsernameRaw.trim().toLowerCase().replace(/^@/, '');
+        if (target === "") {
+            showToast("Укажите имя пользователя", true);
+            return false;
+        }
+        let amount = parseInt(amountRaw, 10);
+        if (isNaN(amount) || amount <= 0) {
+            showToast("Сумма должна быть положительным числом", true);
+            return false;
+        }
+        addCoinsToUser(target, amount);
+        showToast(`✅ Админ выдал ${amount} монет пользователю @${target}`);
+        updateBalanceUI(); // если админ выдал себе — обновить
+        return true;
+    }
+
+    function adminResetDatabase() {
+        if (!isCurrentUserAdmin()) {
+            showToast("Нет прав для сброса БД", true);
+            return;
+        }
+        if (confirm("⚠️ ВНИМАНИЕ! Это действие сбросит балансы всех пользователей (кроме сохраненных в списке админов?). Продолжить?")) {
+            // Сброс: сохраним только текущего пользователя? Лучше сделать чистый старт, но оставим текущего юзера с балансом 100?
+            const currentUserName = currentUser.username;
+            const newStore = {};
+            // Оставляем текущего юзера (чтобы он не потерялся) + сохраним админов из списка с минимальным балансом?
+            if (currentUserName) {
+                newStore[currentUserName] = { balance: 0, lastSeen: Date.now() };
             }
-            const car = this.myCars[index];
-            const repairCost = Math.floor(car.currentPrice * 0.09);  // 9% от текущей цены
-            if (this.money >= repairCost) {
-                this.money -= repairCost;
-                const result = car.repair(this.marketTrend);
-                if (result.success) {
-                    return { success: true, msg: `🔧 РЕМОНТ ${car.model}: состояние +${(result.improvement*100).toFixed(0)}%, цена ${result.oldPrice}₽ → ${result.newPrice}₽ (затраты ${repairCost}₽)` };
-                } else {
-                    return { success: false, msg: "Ошибка ремонта" };
+            // Админы могут получить стартовые 5000 для теста (удобно)
+            for (let adminName of ALLOWED_ADMIN_USERNAMES) {
+                if (!newStore[adminName] && adminName !== currentUserName) {
+                    newStore[adminName] = { balance: 5000, lastSeen: Date.now() };
                 }
-            } else {
-                return { success: false, msg: `💸 Не хватает ${repairCost}₽ на ремонт. Продай что-нибудь!` };
+            }
+            usersStore = newStore;
+            saveStore();
+            updateBalanceUI();
+            showToast("База данных сброшена. Балансы обнулены.");
+            if (document.getElementById('usersListPreview')) {
+                document.getElementById('usersListPreview').innerText = 'База данных сброшена.';
             }
         }
-
-        // новый день (обновление рынка и переоценка)
-        nextDay() {
-            this.day++;
-            // новый рыночный тренд
-            this.generateMarketFactor();
-            // переоцениваем машины в гараже
-            this.reevaluateGarage();
-            // обновляем рыночные предложения
-            this.refreshMarket();
-            let news = `📊 День ${this.day}. Рыночный коэффициент: ${this.marketTrend}x. Цены на автомобили изменились!`;
-            return { news: news, day: this.day, trend: this.marketTrend };
-        }
-
-        getState() {
-            return {
-                money: Math.floor(this.money),
-                day: this.day,
-                myCars: [...this.myCars],
-                marketCars: [...this.marketCars],
-                trend: this.marketTrend
-            };
-        }
     }
 
-    // ------------------- ОТРИСОВКА ИНТЕРФЕЙСА ------------------
-    let game = new GameDealer();
-
-    function initGame() {
-        game.generateMarketFactor();
-        game.refreshMarket();
-        renderAll();
-    }
-
-    function renderAll() {
-        document.getElementById('moneyDisplay').innerText = Math.floor(game.money);
-        document.getElementById('dayDisplay').innerText = game.day;
-        document.getElementById('garageCount').innerText = game.myCars.length;
-        renderMarket();
-        renderInventory();
-    }
-
-    function renderMarket() {
-        const container = document.getElementById('marketGrid');
-        const cars = game.marketCars;
-        if (!cars.length) {
-            container.innerHTML = `<div style="grid-column:1/-1; text-align:center; padding:30px;">🚫 Сегодня нет машин. Нажми "Новый день"</div>`;
+    // Обработка перевода от текущего пользователя
+    function handleSendTransfer() {
+        let recipientRaw = document.getElementById('recipientUsername').value.trim();
+        let amountRaw = document.getElementById('amount').value.trim();
+        if (!recipientRaw) {
+            showToast("Укажите username получателя", true);
             return;
         }
-        container.innerHTML = '';
-        cars.forEach((car, idx) => {
-            const card = createCarCard(car, 'market', idx);
-            container.appendChild(card);
-        });
-    }
-
-    function renderInventory() {
-        const invDiv = document.getElementById('inventoryContainer');
-        const myCars = game.myCars;
-        if (myCars.length === 0) {
-            invDiv.innerHTML = `<div class="empty-message">🚗 Гараж пуст. Купи машину, отремонтируй и продай с выгодой!</div>`;
+        if (!amountRaw) {
+            showToast("Укажите сумму перевода", true);
             return;
         }
-        const grid = document.createElement('div');
-        grid.className = 'cars-grid';
-        myCars.forEach((car, idx) => {
-            const card = createCarCard(car, 'garage', idx);
-            grid.appendChild(card);
-        });
-        invDiv.innerHTML = '';
-        invDiv.appendChild(grid);
+        const recipient = recipientRaw.toLowerCase().replace(/^@/, '');
+        const amount = parseInt(amountRaw, 10);
+        if (isNaN(amount) || amount <= 0) {
+            showToast("Сумма должна быть целым положительным числом", true);
+            return;
+        }
+        const sender = currentUser.username;
+        if (!sender) {
+            showToast("Ошибка: не удалось определить отправителя", true);
+            return;
+        }
+        const result = transferCoins(sender, recipient, amount);
+        if (result.success) {
+            showToast(result.message);
+            updateBalanceUI();
+            document.getElementById('amount').value = '';
+            document.getElementById('recipientUsername').value = '';
+            // Обновляем также админскую панель, если открыта
+            if (isCurrentUserAdmin()) adminShowAllUsers();
+        } else {
+            showToast(result.message, true);
+        }
     }
 
-    function createCarCard(car, type, index) {
-        const cardDiv = document.createElement('div');
-        cardDiv.className = 'car-card';
-        let conditionPercent = Math.floor(car.condition * 100);
-        
-        // доп. информация о прибыли для гаража
-        let profitInfo = '';
-        if (type === 'garage' && car.purchasePrice) {
-            let potentialProfit = car.currentPrice - car.purchasePrice;
-            let profitClass = potentialProfit >= 0 ? 'profit-positive' : '';
-            profitInfo = `<div class="profit-badge">💰 Куплена за ${car.purchasePrice}₽ | 
-                          <span class="${profitClass}">потенц. доход: ${potentialProfit >= 0 ? '+' : ''}${potentialProfit}₽</span></div>`;
-        }
-
-        cardDiv.innerHTML = `
-            <div class="car-name">
-                <span>${car.model}</span>
-                <span>🔧 ${conditionPercent}%</span>
-            </div>
-            <div class="car-price">
-                💵 ЦЕНА: <span class="price-number">${car.currentPrice}₽</span>
-            </div>
-            ${profitInfo}
-            <div class="car-stats">
-                <div class="stat-badge"><span>базовая цена</span><span>${car.baseValue}₽</span></div>
-                <div class="stat-badge"><span>состояние</span><span>${conditionPercent}%</span></div>
-                <div class="stat-badge"><span>рынок ×</span><span>${game.marketTrend}</span></div>
-            </div>
-            <div class="actions">
-                ${type === 'market' ? `<button class="buy-btn" data-action="buy" data-idx="${index}">🚘 КУПИТЬ</button>` : ''}
-                ${type === 'garage' ? `<button class="repair-btn" data-action="repair" data-idx="${index}">🔧 РЕМОНТ</button>` : ''}
-                ${type === 'garage' ? `<button class="sell-btn" data-action="sell" data-idx="${index}">💸 ПРОДАТЬ</button>` : ''}
-            </div>
-        `;
-        
-        const buyBtn = cardDiv.querySelector('[data-action="buy"]');
-        const repairBtn = cardDiv.querySelector('[data-action="repair"]');
-        const sellBtn = cardDiv.querySelector('[data-action="sell"]');
-        
-        if (buyBtn) {
-            buyBtn.addEventListener('click', () => {
-                const res = game.buyCar(parseInt(buyBtn.dataset.idx));
-                showMessage(res.msg);
-                renderAll();
+    // Инициализация UI событий
+    function bindEvents() {
+        document.getElementById('sendBtn').addEventListener('click', handleSendTransfer);
+        const adminAddBtn = document.getElementById('adminAddCoinsBtn');
+        if (adminAddBtn) {
+            adminAddBtn.addEventListener('click', () => {
+                const target = document.getElementById('adminTargetUser').value;
+                const amount = document.getElementById('adminAmount').value;
+                adminAddCoins(target, amount);
             });
         }
-        if (repairBtn) {
-            repairBtn.addEventListener('click', () => {
-                const res = game.repairCar(parseInt(repairBtn.dataset.idx));
-                showMessage(res.msg);
-                renderAll();
-            });
+        const adminShowBtn = document.getElementById('adminShowUsersBtn');
+        if (adminShowBtn) {
+            adminShowBtn.addEventListener('click', adminShowAllUsers);
         }
-        if (sellBtn) {
-            sellBtn.addEventListener('click', () => {
-                const res = game.sellCar(parseInt(sellBtn.dataset.idx));
-                showMessage(res.msg);
-                renderAll();
-            });
+        const adminResetBtn = document.getElementById('adminResetDbBtn');
+        if (adminResetBtn) {
+            adminResetBtn.addEventListener('click', adminResetDatabase);
         }
-        return cardDiv;
     }
 
-    let msgTimeout;
-    function showMessage(text) {
-        const newsDiv = document.getElementById('newsMessage');
-        const original = newsDiv.innerText;
-        newsDiv.innerText = text;
-        if (msgTimeout) clearTimeout(msgTimeout);
-        msgTimeout = setTimeout(() => {
-            newsDiv.innerText = original;
-        }, 2200);
+    // Периодическое обновление баланса (например, при изменении в админке)
+    function startBalanceWatcher() {
+        setInterval(() => {
+            if (currentUser.username) {
+                const newBal = getUserBalance(currentUser.username);
+                const currentBalSpan = document.getElementById('userBalance');
+                if (currentBalSpan.innerText.replace(/[^0-9]/g, '') != newBal) {
+                    updateBalanceUI();
+                }
+            }
+        }, 2000);
     }
 
-    document.getElementById('nextDayBtn').addEventListener('click', () => {
-        const result = game.nextDay();
-        showMessage(`📅 ${result.news}`);
-        renderAll();
-    });
+    // Инициализация темы Telegram
+    function applyTelegramTheme() {
+        const themeParams = tg.themeParams;
+        if (themeParams) {
+            document.body.style.setProperty('--tg-theme-bg-color', themeParams.bg_color || '#ffffff');
+            document.body.style.setProperty('--tg-theme-text-color', themeParams.text_color || '#000000');
+            document.body.style.setProperty('--tg-theme-hint-color', themeParams.hint_color || '#999999');
+            document.body.style.setProperty('--tg-theme-button-color', themeParams.button_color || '#3390ec');
+            document.body.style.setProperty('--tg-theme-button-text-color', themeParams.button_text_color || '#ffffff');
+            document.body.style.setProperty('--tg-theme-secondary-bg-color', themeParams.secondary_bg_color || '#f0f0f0');
+        }
+    }
 
-    initGame();
+    // старт приложения
+    function init() {
+        loadStore();
+        applyTelegramTheme();
+        initTelegramUser();
+        bindEvents();
+        toggleAdminPanel();
+        startBalanceWatcher();
+        // дополнительно - проверка админа после подгрузки юзера
+        setTimeout(() => {
+            toggleAdminPanel();
+            updateBalanceUI();
+        }, 100);
+        // кнопка закрытия (нативная)
+        tg.MainButton?.hide();
+        tg.BackButton?.hide();
+    }
+
+    init();
 </script>
 </body>
 </html>
