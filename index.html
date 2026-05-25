@@ -1,3 +1,10 @@
+Отлично! Полностью перерабатываю приложение с исправлением всех ошибок:
+
+1. **Смены** — теперь привязаны к конкретному месяцу, не смешиваются
+2. **Ферма** — урожай идёт в инвентарь, монеты только после продажи на рынке
+3. **Динамические цены** — каждый новый день цены на рынке меняются (можно искать выгоду)
+4. **Кнопка "Следующий день"** — на ферме можно переключать дни
+```html
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -23,6 +30,7 @@
             --btn-secondary: #e8a735;
             --btn-danger: #d9534f;
             --btn-success: #5cb85c;
+            --btn-info: #5bc0de;
             --progress-bg: #e0e8e0;
             --farm-bg: linear-gradient(135deg, #3a6b2f 0%, #2a5522 100%);
             --soil-color: #8B6914;
@@ -40,6 +48,7 @@
             --btn-secondary: #f0b840;
             --btn-danger: #e06060;
             --btn-success: #6cc86c;
+            --btn-info: #5bc0de;
             --progress-bg: #3a5a3a;
             --farm-bg: linear-gradient(135deg, #2a5522 0%, #1a3a1a 100%);
         }
@@ -54,7 +63,6 @@
 
         .container { max-width: 600px; margin: 0 auto; }
 
-        /* Табы */
         .section-tabs {
             display: flex;
             gap: 8px;
@@ -98,6 +106,7 @@
         .btn-secondary { background: var(--btn-secondary); }
         .btn-danger { background: var(--btn-danger); }
         .btn-outline { background: transparent; border: 1.5px solid var(--border-light); color: var(--text-primary); }
+        .btn-success { background: var(--btn-success); }
         .inline-input { display: flex; gap: 8px; margin-top: 12px; }
         input, select { flex: 1; padding: 12px; border-radius: 40px; border: 1px solid var(--border-light); background: var(--card-bg); color: var(--text-primary); }
         .small-btn { background: var(--btn-primary); border: none; border-radius: 40px; padding: 0 16px; font-weight: bold; color: white; cursor: pointer; }
@@ -110,7 +119,8 @@
 
         /* Ферма */
         .farm-card { background: var(--farm-bg); color: white; }
-        .farm-stats { display: flex; justify-content: space-between; margin-bottom: 15px; font-size: 14px; background: rgba(0,0,0,0.3); border-radius: 16px; padding: 10px; }
+        .farm-stats { display: flex; justify-content: space-between; margin-bottom: 15px; font-size: 14px; background: rgba(0,0,0,0.3); border-radius: 16px; padding: 10; flex-wrap: wrap; gap: 8px; }
+        .farm-stats span { background: rgba(0,0,0,0.3); padding: 4px 10px; border-radius: 20px; }
         .shop-grid, .market-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 10px; }
         .shop-item, .market-item { background: rgba(255,255,255,0.15); border-radius: 16px; padding: 10px; text-align: center; cursor: pointer; }
         .shop-item:active, .market-item:active { transform: scale(0.96); }
@@ -120,6 +130,8 @@
         .plot.planted { background: var(--plant-color); }
         .plot.harvest-ready { background: #ffd700; color: #333; animation: pulse 1s infinite; }
         @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.02); } 100% { transform: scale(1); } }
+        .price-up { color: #90ff90; }
+        .price-down { color: #ff9090; }
 
         /* Календарь смен */
         .calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
@@ -175,29 +187,32 @@
     <div id="farmSection" class="section">
         <div class="card farm-card">
             <h2>🌾 Моя ферма</h2>
-            <div class="farm-stats"><span>💰 Монеты: <span id="farmCoins">0</span></span><span>🌱 Грядок: 6</span></div>
+            <div class="farm-stats">
+                <span>💰 Монеты: <span id="farmCoins">500</span></span>
+                <span>🌱 Грядок: 6</span>
+                <span>📦 Инвентарь: <span id="inventoryCount">0</span> шт</span>
+                <span>📆 День: <span id="farmDay">1</span></span>
+            </div>
             
-            <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+            <div style="display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap;">
                 <button id="showShopBtn" class="btn" style="background:var(--btn-secondary);">🛒 Магазин</button>
-                <button id="showMarketBtn" class="btn" style="background:var(--btn-success);">🏪 Рынок (продажа)</button>
+                <button id="showMarketBtn" class="btn" style="background:var(--btn-success);">🏪 Рынок</button>
                 <button id="showGardenBtn" class="btn">🌱 Огород</button>
+                <button id="nextDayBtn" class="btn" style="background:var(--btn-info);">⏩ Следующий день</button>
             </div>
 
-            <!-- Магазин -->
             <div id="shopPanel">
                 <h3>🛒 Магазин семян</h3>
                 <div class="shop-grid" id="shopGrid"></div>
                 <div style="margin-top: 15px;"><button id="viewCartBtn" class="btn-outline btn">🛍️ Корзина (<span id="cartCount">0</span>)</button></div>
             </div>
 
-            <!-- Рынок (продажа урожая) -->
             <div id="marketPanel" style="display:none;">
-                <h3>🏪 Рынок</h3>
+                <h3>🏪 Рынок (цены меняются каждый день!)</h3>
                 <div class="market-grid" id="marketGrid"></div>
-                <div id="marketStatus" style="margin-top: 10px; font-size:12px; opacity:0.8;"></div>
+                <div id="inventoryDisplay" style="margin-top: 15px; background:rgba(0,0,0,0.2); border-radius:16px; padding:10px;"></div>
             </div>
 
-            <!-- Огород -->
             <div id="gardenPanel" style="display:none;">
                 <h3>🌱 Мой огород</h3>
                 <div class="garden-grid" id="gardenGrid"></div>
@@ -206,7 +221,6 @@
             </div>
         </div>
 
-        <!-- Модальное окно корзины -->
         <div id="cartModal" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.7); z-index:1000; align-items:center; justify-content:center;">
             <div style="background:var(--card-bg); max-width:500px; width:90%; border-radius:24px; padding:20px; max-height:80%; overflow-y:auto;">
                 <h3>🛍️ Корзина</h3>
@@ -239,38 +253,78 @@
     
     // ========== ФЕРМА ==========
     let farmCoins = 500;
+    let farmDay = 1;
     let inventory = {}; // { seedId: quantity }
-    let garden = [null, null, null, null, null, null]; // 6 грядок: null или { seedId, plantName, plantedAt, growTime, harvestValue }
-    let cart = []; // { id, name, price, sellPrice }
-    let marketListings = []; // товары на продажу { id, name, quantity, pricePerUnit }
+    let garden = [null, null, null, null, null, null];
+    let cart = [];
+    // Динамические цены на рынке
+    let marketPrices = {};
     
     const seeds = {
-        wheat: { name: "🌾 Пшеница", price: 30, growTime: 30000, harvestValue: 60, emoji: "🌾" },
-        carrot: { name: "🥕 Морковь", price: 40, growTime: 45000, harvestValue: 90, emoji: "🥕" },
-        tomato: { name: "🍅 Помидор", price: 60, growTime: 60000, harvestValue: 140, emoji: "🍅" },
-        potato: { name: "🥔 Картофель", price: 50, growTime: 75000, harvestValue: 120, emoji: "🥔" },
-        corn: { name: "🌽 Кукуруза", price: 80, growTime: 90000, harvestValue: 200, emoji: "🌽" }
+        wheat: { name: "🌾 Пшеница", price: 30, growTime: 30000, baseValue: 60, emoji: "🌾" },
+        carrot: { name: "🥕 Морковь", price: 40, growTime: 45000, baseValue: 90, emoji: "🥕" },
+        tomato: { name: "🍅 Помидор", price: 60, growTime: 60000, baseValue: 140, emoji: "🍅" },
+        potato: { name: "🥔 Картофель", price: 50, growTime: 75000, baseValue: 120, emoji: "🥔" },
+        corn: { name: "🌽 Кукуруза", price: 80, growTime: 90000, baseValue: 200, emoji: "🌽" }
     };
+    
+    function generateRandomPrice(baseValue) {
+        // цена от 70% до 130% от базовой
+        const variation = 0.7 + Math.random() * 0.6;
+        return Math.floor(baseValue * variation);
+    }
+    
+    function updateMarketPrices() {
+        for (let id in seeds) {
+            marketPrices[id] = generateRandomPrice(seeds[id].baseValue);
+        }
+    }
+    
+    function nextDay() {
+        farmDay++;
+        // Обновляем цены на рынке
+        updateMarketPrices();
+        // Обновляем рост растений
+        for (let i = 0; i < garden.length; i++) {
+            if (garden[i] && garden[i].plantedAt) {
+                // Ничего не делаем, просто при отрисовке проверим
+            }
+        }
+        saveFarmData();
+        updateFarmUI();
+        // Показываем уведомление об изменении цен
+        const marketPricesDiv = document.getElementById('marketGrid');
+        if (marketPricesDiv && document.getElementById('marketPanel').style.display !== 'none') {
+            renderMarket();
+        }
+    }
     
     function saveFarmData() {
         localStorage.setItem('farmCoins', farmCoins);
+        localStorage.setItem('farmDay', farmDay);
         localStorage.setItem('inventory', JSON.stringify(inventory));
         localStorage.setItem('garden', JSON.stringify(garden.map(p => p ? { ...p, plantedAt: p.plantedAt } : null)));
-        localStorage.setItem('marketListings', JSON.stringify(marketListings));
+        localStorage.setItem('marketPrices', JSON.stringify(marketPrices));
     }
     
     function loadFarmData() {
         farmCoins = parseFloat(localStorage.getItem('farmCoins')) || 500;
+        farmDay = parseInt(localStorage.getItem('farmDay')) || 1;
         inventory = JSON.parse(localStorage.getItem('inventory')) || {};
         const savedGarden = JSON.parse(localStorage.getItem('garden'));
         if (savedGarden) garden = savedGarden.map(p => p ? { ...p, plantedAt: p.plantedAt } : null);
-        marketListings = JSON.parse(localStorage.getItem('marketListings')) || [];
+        const savedPrices = JSON.parse(localStorage.getItem('marketPrices'));
+        if (savedPrices) marketPrices = savedPrices;
+        else updateMarketPrices();
         updateFarmUI();
         startGardenCheck();
     }
     
     function updateFarmUI() {
         document.getElementById('farmCoins').innerText = Math.floor(farmCoins);
+        document.getElementById('farmDay').innerText = farmDay;
+        const totalInventory = Object.values(inventory).reduce((a,b) => a + b, 0);
+        document.getElementById('inventoryCount').innerText = totalInventory;
         renderShop();
         renderMarket();
         renderGarden();
@@ -288,7 +342,7 @@
                 <div>${seed.name}</div>
                 <div style="font-size:11px;">💰 ${seed.price} монет</div>
                 <div style="font-size:10px;">🌱 ${seed.growTime/1000} сек</div>
-                <button class="small-btn add-to-cart" data-id="${id}" data-name="${seed.name}" data-price="${seed.price}" data-sell="${seed.harvestValue}" style="margin-top:5px; padding:4px 8px;">В корзину</button>
+                <button class="small-btn add-to-cart" data-id="${id}" data-name="${seed.name}" data-price="${seed.price}" style="margin-top:5px; padding:4px 8px;">В корзину</button>
             </div>`;
         }
         document.querySelectorAll('.add-to-cart').forEach(btn => {
@@ -296,7 +350,7 @@
                 e.stopPropagation();
                 const id = btn.dataset.id;
                 const seed = seeds[id];
-                cart.push({ id, name: seed.name, price: seed.price, sellPrice: seed.harvestValue });
+                cart.push({ id, name: seed.name, price: seed.price });
                 updateCartUI();
             });
         });
@@ -335,9 +389,19 @@
     
     function renderInventory() {
         const container = document.getElementById('inventoryList');
-        if (!container) return;
-        if (Object.keys(inventory).length === 0) { container.innerHTML = '📦 Инвентарь пуст'; return; }
-        container.innerHTML = Object.entries(inventory).map(([id, qty]) => `<span style="background:rgba(0,0,0,0.3); border-radius:20px; padding:4px 10px; margin:3px; display:inline-block;">${seeds[id]?.emoji || '🌱'} ${seeds[id]?.name || id}: ${qty} шт.</span>`).join('');
+        const displayContainer = document.getElementById('inventoryDisplay');
+        if (container) {
+            if (Object.keys(inventory).length === 0) { container.innerHTML = '📦 Инвентарь пуст'; }
+            else {
+                container.innerHTML = Object.entries(inventory).map(([id, qty]) => `<span style="background:rgba(0,0,0,0.3); border-radius:20px; padding:4px 10px; margin:3px; display:inline-block;">${seeds[id]?.emoji || '🌱'} ${seeds[id]?.name || id}: ${qty} шт.</span>`).join('');
+            }
+        }
+        if (displayContainer) {
+            if (Object.keys(inventory).length === 0) { displayContainer.innerHTML = '📦 У вас пока нет урожая для продажи'; }
+            else {
+                displayContainer.innerHTML = '<strong>Ваш урожай на продажу:</strong><br>' + Object.entries(inventory).map(([id, qty]) => `${seeds[id]?.emoji} ${seeds[id]?.name}: ${qty} шт.`).join('<br>');
+            }
+        }
     }
     
     function plantSeed(plotIndex) {
@@ -356,7 +420,7 @@
             plantName: seeds[seedId].name,
             plantedAt: Date.now(),
             growTime: seeds[seedId].growTime,
-            harvestValue: seeds[seedId].harvestValue,
+            harvestValue: seeds[seedId].baseValue,
             emoji: seeds[seedId].emoji
         };
         saveFarmData();
@@ -368,11 +432,12 @@
         if (!plot) return;
         const elapsed = Date.now() - plot.plantedAt;
         if (elapsed >= plot.growTime) {
-            farmCoins += plot.harvestValue;
+            // Урожай идёт в инвентарь, а не сразу в монеты!
+            inventory[plot.seedId] = (inventory[plot.seedId] || 0) + 1;
             garden[plotIndex] = null;
             saveFarmData();
             updateFarmUI();
-            addFarmHistory(`🌾 Собран урожай ${plot.plantName} +${plot.harvestValue} монет`);
+            alert(`🌾 Собран ${plot.plantName}! Урожай добавлен в инвентарь. Продайте его на рынке.`);
         } else {
             const remain = Math.ceil((plot.growTime - elapsed) / 1000);
             alert(`Ещё не выросло! Осталось ${remain} сек`);
@@ -408,45 +473,49 @@
         });
     }
     
-    function startGardenCheck() {
-        setInterval(() => { renderGarden(); saveFarmData(); }, 1000);
-    }
-    
-    function addFarmHistory(msg) { console.log(msg); }
-    
-    // Рынок (продажа урожая)
     function renderMarket() {
         const container = document.getElementById('marketGrid');
         if (!container) return;
         container.innerHTML = '';
         for (let [id, seed] of Object.entries(seeds)) {
+            const currentPrice = marketPrices[id] || seed.baseValue;
+            const priceChange = ((currentPrice - seed.baseValue) / seed.baseValue * 100).toFixed(0);
+            const priceClass = currentPrice >= seed.baseValue ? 'price-up' : 'price-down';
+            const arrow = currentPrice >= seed.baseValue ? '↑' : '↓';
             container.innerHTML += `<div class="market-item" data-seed="${id}">
                 <div style="font-size:24px;">${seed.emoji}</div>
                 <div>${seed.name}</div>
-                <div>💰 Цена: ${seed.harvestValue} монет</div>
+                <div class="${priceClass}">💰 ${currentPrice} монет ${arrow} ${Math.abs(priceChange)}%</div>
+                <div style="font-size:11px;">Базовая цена: ${seed.baseValue}</div>
                 <div class="inline-input" style="margin-top:5px;">
-                    <input type="number" id="qty-${id}" placeholder="Кол-во" value="1" style="padding:6px;">
-                    <button class="small-btn sell-item" data-id="${id}" data-price="${seed.harvestValue}" style="padding:6px 12px;">Продать</button>
+                    <input type="number" id="sell-qty-${id}" placeholder="Кол-во" value="1" style="padding:6px;">
+                    <button class="small-btn sell-item" data-id="${id}" data-price="${currentPrice}" style="padding:6px 12px;">Продать</button>
                 </div>
             </div>`;
         }
         document.querySelectorAll('.sell-item').forEach(btn => {
             btn.addEventListener('click', () => {
                 const seedId = btn.dataset.id;
-                const qty = parseInt(document.getElementById(`qty-${seedId}`).value);
+                const price = parseInt(btn.dataset.price);
+                const qty = parseInt(document.getElementById(`sell-qty-${seedId}`).value);
                 if (isNaN(qty) || qty <= 0) return;
-                if (inventory[seedId] >= qty) {
+                if (inventory[seedId] && inventory[seedId] >= qty) {
                     inventory[seedId] -= qty;
-                    const income = qty * seeds[seedId].harvestValue;
+                    const income = qty * price;
                     farmCoins += income;
                     saveFarmData();
                     updateFarmUI();
-                    alert(`Продано ${qty} шт. ${seeds[seedId].name} за ${income} монет`);
+                    alert(`✅ Продано ${qty} шт. ${seeds[seedId].name} за ${income} монет!`);
                 } else {
                     alert(`У вас только ${inventory[seedId] || 0} шт. ${seeds[seedId].name}`);
                 }
             });
         });
+        renderInventory();
+    }
+    
+    function startGardenCheck() {
+        setInterval(() => { renderGarden(); saveFarmData(); }, 1000);
     }
     
     function switchFarmPanel(panel) {
@@ -458,10 +527,10 @@
         if (panel === 'garden') { renderGarden(); renderInventory(); }
     }
     
-    // ========== КАЛЕНДАРЬ СМЕН 2/2 ==========
+    // ========== КАЛЕНДАРЬ СМЕН (фикс — смены по месяцам отдельно) ==========
     let calCurrentYear = 2026;
     let calCurrentMonth = 0;
-    let shifts = {}; // key: "YYYY-MM-DD" -> true
+    let shifts = {}; // key: "YYYY-MM" -> { "DD": true }
     
     function loadShifts() {
         const saved = localStorage.getItem('shifts');
@@ -469,35 +538,50 @@
         else shifts = {};
     }
     function saveShifts() { localStorage.setItem('shifts', JSON.stringify(shifts)); }
-    function toggleShift(dateKey) {
-        if (shifts[dateKey]) delete shifts[dateKey];
-        else shifts[dateKey] = true;
+    
+    function toggleShift(year, month, day) {
+        const monthKey = `${year}-${String(month+1).padStart(2,'0')}`;
+        const dayStr = String(day).padStart(2,'0');
+        if (!shifts[monthKey]) shifts[monthKey] = {};
+        if (shifts[monthKey][dayStr]) delete shifts[monthKey][dayStr];
+        else shifts[monthKey][dayStr] = true;
         saveShifts();
         renderCalendar();
+    }
+    
+    function getShiftCountForMonth(year, month) {
+        const monthKey = `${year}-${String(month+1).padStart(2,'0')}`;
+        if (!shifts[monthKey]) return 0;
+        return Object.keys(shifts[monthKey]).length;
     }
     
     function renderCalendar() {
         const monthNames = ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
         document.getElementById('calMonthYear').innerText = `${monthNames[calCurrentMonth]} ${calCurrentYear}`;
         const firstDay = new Date(calCurrentYear, calCurrentMonth, 1);
-        const startWeekday = firstDay.getDay() || 7;
+        let startWeekday = firstDay.getDay();
+        startWeekday = startWeekday === 0 ? 7 : startWeekday;
         const daysInMonth = new Date(calCurrentYear, calCurrentMonth + 1, 0).getDate();
         const today = new Date();
         const todayStr = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
+        const monthKey = `${calCurrentYear}-${String(calCurrentMonth+1).padStart(2,'0')}`;
+        const currentMonthShifts = shifts[monthKey] || {};
+        
         let html = '';
         for (let i = 1; i < startWeekday; i++) html += '<div class="calendar-day"></div>';
         for (let d = 1; d <= daysInMonth; d++) {
-            const dateKey = `${calCurrentYear}-${String(calCurrentMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-            const isShift = shifts[dateKey];
-            const isToday = dateKey === todayStr;
-            html += `<div class="calendar-day ${isShift ? 'shift' : ''} ${isToday ? 'today' : ''}" data-date="${dateKey}">${d}</div>`;
+            const dayStr = String(d).padStart(2,'0');
+            const isShift = currentMonthShifts[dayStr] === true;
+            const isToday = `${calCurrentYear}-${String(calCurrentMonth+1).padStart(2,'0')}-${dayStr}` === todayStr;
+            html += `<div class="calendar-day ${isShift ? 'shift' : ''} ${isToday ? 'today' : ''}" data-day="${d}">${d}</div>`;
         }
         document.getElementById('calendarDays').innerHTML = html;
-        document.querySelectorAll('.calendar-day[data-date]').forEach(el => {
-            el.addEventListener('click', () => toggleShift(el.dataset.date));
+        document.querySelectorAll('.calendar-day[data-day]').forEach(el => {
+            const day = parseInt(el.dataset.day);
+            el.addEventListener('click', () => toggleShift(calCurrentYear, calCurrentMonth, day));
         });
-        const shiftCount = Object.values(shifts).filter(v => v === true && Object.keys(shifts).some(key => key.startsWith(`${calCurrentYear}-${String(calCurrentMonth+1).padStart(2,'0')}`))).length;
-        document.getElementById('shiftSummary').innerHTML = `📊 В этом месяце: ${shiftCount} смен(ы) | График 2/2 (рабочий день отмечается)`;
+        const shiftCount = getShiftCountForMonth(calCurrentYear, calCurrentMonth);
+        document.getElementById('shiftSummary').innerHTML = `📊 В ${monthNames[calCurrentMonth]} ${calCurrentYear}: ${shiftCount} смен(ы) | График 2/2 (рабочий день отмечается)`;
     }
     
     function changeCalMonth(delta) {
@@ -510,12 +594,13 @@
         renderCalendar();
     }
     
-    // ========== ФИНАНСЫ (упрощённо) ==========
+    // ========== ФИНАНСЫ ==========
     let financeData = {};
     let financeTransactions = [];
     let financeCategories = { 1: { name: 'Транспорт', limit: 5000 }, 2: { name: 'Продукты', limit: 10000 } };
     let financeGoals = {};
     let nextCatId = 3;
+    let currentYear = 2026, currentMonth = 0;
     
     function loadFinance() {
         const saved = localStorage.getItem('financeData');
@@ -553,11 +638,9 @@
     window.deleteGoal = (id) => { delete financeGoals[id]; saveFinance(); updateFinanceUI(); };
     function addCategory() { let n = prompt('Название'); if(n) { let l = prompt('Лимит'); financeCategories[nextCatId++] = { name: n, limit: parseFloat(l) || 5000 }; saveFinance(); updateFinanceUI(); } }
     function addGoal() { let n = prompt('Название'); if(n) { let t = parseFloat(prompt('Сумма')); financeGoals[nextCatId++] = { name: n, target: t, current: 0, month: 12, year: 2026 }; saveFinance(); updateFinanceUI(); } }
-    
-    let currentYear = 2026, currentMonth = 0;
     function changeMonth(delta) { let nm = currentMonth + delta; if (nm < 0) { nm = 11; currentYear--; } else if (nm > 11) { nm = 0; currentYear++; } currentMonth = nm; updateFinanceUI(); }
     
-    // ========== СБРОС ВСЕГО ==========
+    // ========== СБРОС ==========
     function resetAll() {
         if (confirm('Сбросить ВСЕ данные?')) {
             localStorage.clear();
@@ -588,6 +671,7 @@
         document.getElementById('showShopBtn').onclick = () => switchFarmPanel('shop');
         document.getElementById('showMarketBtn').onclick = () => switchFarmPanel('market');
         document.getElementById('showGardenBtn').onclick = () => switchFarmPanel('garden');
+        document.getElementById('nextDayBtn').onclick = () => nextDay();
         document.getElementById('viewCartBtn').onclick = () => document.getElementById('cartModal').style.display = 'flex';
         document.getElementById('closeCartBtn').onclick = () => document.getElementById('cartModal').style.display = 'none';
         document.getElementById('checkoutBtn').onclick = () => { checkout(); document.getElementById('cartModal').style.display = 'none'; };
@@ -605,8 +689,8 @@
         document.getElementById('topUpPiggyBtn').onclick = () => { let amt = parseFloat(document.getElementById('piggyAmount').value); if (amt) { let bal = (financeData[`${currentYear}-${String(currentMonth+1).padStart(2,'0')}`]?.balance || 0); if (bal >= amt) { addFinanceTransaction(-amt, `🐷 Пополнение копилки: ${amt}₽`); let p = parseFloat(localStorage.getItem('piggyBalance'))||0; localStorage.setItem('piggyBalance', p+amt); updateFinanceUI(); } else alert('Недостаточно средств'); } };
         document.getElementById('clearPiggyBtn').onclick = () => { localStorage.setItem('piggyBalance', '0'); updateFinanceUI(); };
         
-        updateExpenseSelect();
         function updateExpenseSelect() { let sel = document.getElementById('expenseCategorySelect'); sel.innerHTML = '<option value="">Выберите</option>'; for (let id in financeCategories) sel.innerHTML += `<option value="${id}">${financeCategories[id].name}</option>`; }
+        updateExpenseSelect();
         
         switchFarmPanel('shop');
         updateFarmUI();
