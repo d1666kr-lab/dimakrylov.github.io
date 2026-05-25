@@ -3,61 +3,45 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Финансы + Кликер — полное разделение</title>
+    <title>Финансы + Ферма + Календарь смен</title>
     <style>
         * {
             box-sizing: border-box;
             user-select: none;
             -webkit-tap-highlight-color: transparent;
-            transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+            transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.1s ease;
         }
 
         :root {
-            --bg-page: #f1f5f9;
+            --bg-page: #f0f4e8;
             --card-bg: #ffffff;
-            --text-primary: #0f172a;
-            --text-secondary: #475569;
-            --border-light: #cbd5e1;
-            --cat-bg: #f8fafc;
-            --rec-bg: #eef2ff;
-            --rec-text: #1e40af;
-            --shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-            --btn-primary: #3b82f6;
-            --btn-secondary: #f59e0b;
-            --btn-danger: #ef4444;
-            --btn-warning: #ea580c;
-            --btn-success: #22c55e;
-            --btn-outline-border: #cbd5e1;
-            --btn-outline-text: #1e293b;
-            --progress-bg: #e2e8f0;
-            --progress-fill: #22c55e;
-            --history-hover: #f1f5f9;
-            --clicker-bg: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            --upgrade-bg: rgba(255,255,255,0.15);
+            --text-primary: #2d3e2d;
+            --text-secondary: #5a6e5a;
+            --border-light: #c5d5c5;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            --btn-primary: #4a7c3f;
+            --btn-secondary: #e8a735;
+            --btn-danger: #d9534f;
+            --btn-success: #5cb85c;
+            --progress-bg: #e0e8e0;
+            --farm-bg: linear-gradient(135deg, #3a6b2f 0%, #2a5522 100%);
+            --soil-color: #8B6914;
+            --plant-color: #4CAF50;
         }
 
         body.dark {
-            --bg-page: #0f172a;
-            --card-bg: #1e293b;
-            --text-primary: #f1f5f9;
-            --text-secondary: #94a3b8;
-            --border-light: #334155;
-            --cat-bg: #0f172a;
-            --rec-bg: #1e293b;
-            --rec-text: #a5f3fc;
+            --bg-page: #1a2a1a;
+            --card-bg: #2a3a2a;
+            --text-primary: #e0f0e0;
+            --text-secondary: #a0b8a0;
+            --border-light: #4a6a4a;
             --shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-            --btn-primary: #2563eb;
-            --btn-secondary: #d97706;
-            --btn-danger: #dc2626;
-            --btn-warning: #c2410c;
-            --btn-success: #16a34a;
-            --btn-outline-border: #475569;
-            --btn-outline-text: #cbd5e1;
-            --progress-bg: #334155;
-            --progress-fill: #4ade80;
-            --history-hover: #334155;
-            --clicker-bg: linear-gradient(135deg, #4c51bf 0%, #5b21b6 100%);
-            --upgrade-bg: rgba(255,255,255,0.1);
+            --btn-primary: #5a9c4a;
+            --btn-secondary: #f0b840;
+            --btn-danger: #e06060;
+            --btn-success: #6cc86c;
+            --progress-bg: #3a5a3a;
+            --farm-bg: linear-gradient(135deg, #2a5522 0%, #1a3a1a 100%);
         }
 
         body {
@@ -68,46 +52,33 @@
             color: var(--text-primary);
         }
 
-        .container {
-            max-width: 600px;
-            margin: 0 auto;
-        }
+        .container { max-width: 600px; margin: 0 auto; }
 
+        /* Табы */
         .section-tabs {
             display: flex;
-            gap: 12px;
+            gap: 8px;
             margin-bottom: 20px;
+            flex-wrap: wrap;
         }
         .tab-btn {
             flex: 1;
-            padding: 14px;
+            padding: 12px 8px;
             border: none;
             border-radius: 60px;
-            font-size: 18px;
+            font-size: 13px;
             font-weight: 700;
             cursor: pointer;
-            transition: 0.2s;
             background: var(--card-bg);
             color: var(--text-primary);
             box-shadow: var(--shadow);
+            min-width: 80px;
         }
-        .tab-btn.active {
-            background: var(--btn-primary);
-            color: white;
-        }
-        .tab-btn:active { transform: scale(0.96); }
+        .tab-btn.active { background: var(--btn-primary); color: white; }
 
-        .section {
-            display: none;
-        }
-        .section.active-section {
-            display: block;
-            animation: fadeIn 0.3s ease;
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+        .section { display: none; }
+        .section.active-section { display: block; animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
         .card {
             background: var(--card-bg);
@@ -117,206 +88,66 @@
             box-shadow: var(--shadow);
         }
 
-        /* Кликер стили */
-        .clicker-card {
-            background: var(--clicker-bg);
-            color: white;
-            text-align: center;
-        }
-        .coin-image {
-            font-size: 100px;
-            cursor: pointer;
-            transition: transform 0.1s ease;
-            display: inline-block;
-            filter: drop-shadow(0 8px 16px rgba(0,0,0,0.3));
-        }
-        .coin-image:active { transform: scale(0.92); }
-        .click-counter { font-size: 42px; font-weight: 800; margin: 15px 0; text-shadow: 0 2px 4px rgba(0,0,0,0.2); }
-        .click-per-click { font-size: 14px; opacity: 0.9; margin-bottom: 15px; }
-        
-        .upgrade-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 10px;
-            margin-top: 15px;
-        }
-        .upgrade-btn {
-            background: var(--upgrade-bg);
-            border: 1px solid rgba(255,255,255,0.3);
-            border-radius: 16px;
-            padding: 12px;
-            color: white;
-            cursor: pointer;
-            transition: 0.2s;
-            text-align: left;
-        }
-        .upgrade-btn:active { transform: scale(0.96); background: rgba(255,255,255,0.25); }
-        .upgrade-name { font-weight: bold; font-size: 14px; }
-        .upgrade-desc { font-size: 10px; opacity: 0.7; margin-top: 2px; }
-        .upgrade-price { font-size: 12px; margin-top: 6px; color: #ffd700; }
-        
-        .stats-row {
-            display: flex;
-            justify-content: space-between;
-            background: rgba(255,255,255,0.15);
-            border-radius: 16px;
-            padding: 10px;
-            margin: 10px 0;
-            font-size: 13px;
-        }
-        .clicker-history {
-            max-height: 200px;
-            overflow-y: auto;
-            background: rgba(0,0,0,0.2);
-            border-radius: 16px;
-            padding: 10px;
-            margin-top: 15px;
-            text-align: left;
-            font-size: 12px;
-        }
-        .clicker-history-item {
-            padding: 5px;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-            font-family: monospace;
-        }
-        
-        /* Финансы стили */
-        .balance {
-            background: linear-gradient(135deg, #1e293b, #0f172a);
-            color: white;
-        }
+        /* Финансы */
+        .balance { background: linear-gradient(135deg, #2a5a2a, #1a3a1a); color: white; }
         .balance-amount { font-size: 42px; font-weight: 800; margin: 8px 0; }
-        .month-selector {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-top: 16px;
-            background: rgba(255,255,255,0.15);
-            border-radius: 40px;
-            padding: 8px 12px;
-        }
-        .month-selector button {
-            background: rgba(255,255,255,0.2);
-            border: none;
-            font-size: 20px;
-            color: white;
-            width: 40px;
-            height: 40px;
-            border-radius: 40px;
-            cursor: pointer;
-        }
+        .month-selector { display: flex; justify-content: space-between; align-items: center; margin-top: 16px; background: rgba(255,255,255,0.15); border-radius: 40px; padding: 8px 12px; }
+        .month-selector button { background: rgba(255,255,255,0.2); border: none; font-size: 20px; color: white; width: 40px; height: 40px; border-radius: 40px; cursor: pointer; }
         .button-group { display: flex; gap: 12px; margin-top: 20px; flex-wrap: wrap; }
-        .btn {
-            flex: 1;
-            background: var(--btn-primary);
-            border: none;
-            padding: 12px 16px;
-            border-radius: 60px;
-            font-weight: 600;
-            color: white;
-            cursor: pointer;
-            text-align: center;
-        }
+        .btn { flex: 1; background: var(--btn-primary); border: none; padding: 12px; border-radius: 60px; font-weight: 600; color: white; cursor: pointer; text-align: center; }
         .btn-secondary { background: var(--btn-secondary); }
         .btn-danger { background: var(--btn-danger); }
-        .btn-outline {
-            background: transparent;
-            border: 1.5px solid var(--btn-outline-border);
-            color: var(--btn-outline-text);
-        }
-        .section-title {
-            font-size: 20px;
-            font-weight: 700;
-            margin: 20px 0 12px 0;
-            display: flex;
-            justify-content: space-between;
-        }
-        .cat-item, .goal-item {
-            background: var(--cat-bg);
-            border-radius: 20px;
-            padding: 14px 16px;
-            margin-bottom: 10px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-        }
+        .btn-outline { background: transparent; border: 1.5px solid var(--border-light); color: var(--text-primary); }
         .inline-input { display: flex; gap: 8px; margin-top: 12px; }
-        input, select {
-            flex: 1;
-            padding: 12px;
-            border-radius: 40px;
-            border: 1px solid var(--border-light);
-            background: var(--card-bg);
-            color: var(--text-primary);
-            font-size: 14px;
-        }
-        .small-btn {
-            background: var(--btn-primary);
-            border: none;
-            border-radius: 40px;
-            padding: 0 16px;
-            font-weight: bold;
-            color: white;
-            cursor: pointer;
-        }
-        .goal-progress {
-            background: var(--progress-bg);
-            border-radius: 20px;
-            height: 8px;
-            width: 100%;
-            margin: 8px 0;
-        }
-        .goal-fill {
-            background: var(--progress-fill);
-            height: 8px;
-            border-radius: 20px;
-            width: 0%;
-        }
-        .rec-box {
-            background: var(--rec-bg);
-            border-radius: 20px;
-            padding: 12px;
-            margin-top: 12px;
-            font-size: 14px;
-            color: var(--rec-text);
-        }
-        .history-item {
-            background: var(--cat-bg);
-            border-radius: 16px;
-            padding: 10px;
-            margin-bottom: 8px;
-            font-size: 12px;
-        }
-        .history-log { max-height: 250px; overflow-y: auto; }
-        .theme-switch { display: flex; justify-content: flex-end; margin-bottom: 12px; gap: 10px; }
-        .theme-toggle, .reset-btn {
-            background: var(--card-bg);
-            border: 1px solid var(--border-light);
-            border-radius: 40px;
-            padding: 6px 14px;
-            font-size: 14px;
-            cursor: pointer;
-            color: var(--text-primary);
-        }
+        input, select { flex: 1; padding: 12px; border-radius: 40px; border: 1px solid var(--border-light); background: var(--card-bg); color: var(--text-primary); }
+        .small-btn { background: var(--btn-primary); border: none; border-radius: 40px; padding: 0 16px; font-weight: bold; color: white; cursor: pointer; }
+        .cat-item, .goal-item { background: var(--bg-page); border-radius: 16px; padding: 12px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; }
+        .icon-btn { background: none; border: none; font-size: 18px; cursor: pointer; padding: 0 8px; }
+        .goal-progress { background: var(--progress-bg); border-radius: 20px; height: 8px; width: 100%; margin: 8px 0; }
+        .goal-fill { background: var(--btn-success); height: 8px; border-radius: 20px; width: 0%; }
+        .history-log { max-height: 200px; overflow-y: auto; }
+        .history-item { background: var(--bg-page); border-radius: 12px; padding: 8px; margin-bottom: 6px; font-size: 12px; }
+
+        /* Ферма */
+        .farm-card { background: var(--farm-bg); color: white; }
+        .farm-stats { display: flex; justify-content: space-between; margin-bottom: 15px; font-size: 14px; background: rgba(0,0,0,0.3); border-radius: 16px; padding: 10px; }
+        .shop-grid, .market-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 10px; }
+        .shop-item, .market-item { background: rgba(255,255,255,0.15); border-radius: 16px; padding: 10px; text-align: center; cursor: pointer; }
+        .shop-item:active, .market-item:active { transform: scale(0.96); }
+        .cart-item { display: flex; justify-content: space-between; background: rgba(255,255,255,0.1); border-radius: 12px; padding: 8px; margin-bottom: 6px; }
+        .garden-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 15px; }
+        .plot { background: var(--soil-color); border-radius: 16px; aspect-ratio: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; font-size: 12px; text-align: center; color: white; text-shadow: 1px 1px 0 rgba(0,0,0,0.5); }
+        .plot.planted { background: var(--plant-color); }
+        .plot.harvest-ready { background: #ffd700; color: #333; animation: pulse 1s infinite; }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.02); } 100% { transform: scale(1); } }
+
+        /* Календарь смен */
+        .calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .calendar-weekdays { display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; font-weight: bold; margin-bottom: 10px; }
+        .calendar-days { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; }
+        .calendar-day { background: var(--bg-page); border-radius: 12px; padding: 10px 5px; text-align: center; cursor: pointer; font-size: 14px; position: relative; }
+        .calendar-day.shift { background: var(--btn-primary); color: white; }
+        .calendar-day.today { border: 2px solid var(--btn-secondary); }
+        .shift-summary { background: var(--btn-primary); color: white; border-radius: 16px; padding: 12px; text-align: center; margin-top: 15px; }
+        .theme-switch { display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 12px; }
+        .theme-toggle, .reset-btn { background: var(--card-bg); border: 1px solid var(--border-light); border-radius: 40px; padding: 6px 14px; font-size: 12px; cursor: pointer; }
         .reset-btn { color: var(--btn-danger); border-color: var(--btn-danger); }
-        .icon-btn { background: none; border: none; font-size: 18px; cursor: pointer; padding: 0 5px; }
     </style>
 </head>
 <body>
 <div class="container">
     <div class="theme-switch">
-        <button id="resetAllDataBtn" class="reset-btn">🗑 Сбросить ВСЕ данные</button>
+        <button id="resetAllDataBtn" class="reset-btn">🗑 Сбросить всё</button>
         <button id="themeToggleBtn" class="theme-toggle">🌙 Тёмная тема</button>
     </div>
-    
-    <!-- Переключатель разделов -->
+
     <div class="section-tabs">
         <button class="tab-btn active" data-section="finance">💰 Финансы</button>
-        <button class="tab-btn" data-section="clicker">🪙 Кликер (VK Coin)</button>
+        <button class="tab-btn" data-section="farm">🌾 Ферма</button>
+        <button class="tab-btn" data-section="calendar">📅 Смены 2/2</button>
     </div>
 
-    <!-- ==================== РАЗДЕЛ ФИНАНСЫ ==================== -->
+    <!-- ========== ФИНАНСЫ ========== -->
     <div id="financeSection" class="section active-section">
         <div class="card balance">
             <h2>💰 Основной баланс</h2>
@@ -327,635 +158,461 @@
                 <button id="nextMonthBtn">▶</button>
             </div>
             <div class="button-group">
-                <button class="btn" id="getSalaryBtn">💵 Получил зарплату</button>
-                <button class="btn btn-secondary" id="getAdvanceBtn">📆 Получил аванс</button>
+                <button class="btn" id="getSalaryBtn">💵 Зарплата</button>
+                <button class="btn btn-secondary" id="getAdvanceBtn">📆 Аванс</button>
             </div>
         </div>
-
-        <div class="card">
-            <h3>💸 Добавить расход</h3>
-            <div class="inline-input">
-                <select id="expenseCategorySelect"><option value="">Выберите категорию</option></select>
-                <input type="number" id="expenseAmount" placeholder="Сумма" value="1000">
-                <button class="small-btn" id="addExpenseBtn">✅ Добавить</button>
-            </div>
-        </div>
-
-        <div class="card">
-            <div style="display: flex; justify-content: space-between;">
-                <h3 style="margin:0">🐷 Копилка</h3>
-                <span id="piggyBalance" style="font-weight:800; font-size:22px;">0 ₽</span>
-            </div>
-            <div class="inline-input">
-                <input type="number" id="piggyAmount" placeholder="Сумма" value="1000">
-                <button class="small-btn" id="topUpPiggyBtn">➕ Пополнить (с баланса)</button>
-            </div>
-            <button class="btn-danger btn" id="clearPiggyBtn" style="margin-top: 12px;">🗑 Очистить копилку</button>
-        </div>
-
-        <div class="section-title"><span>📂 Категории трат</span><button class="btn-outline" id="addCategoryBtn">+ Добавить</button></div>
+        <div class="card"><h3>💸 Расход</h3><div class="inline-input"><select id="expenseCategorySelect"><option value="">Выберите категорию</option></select><input type="number" id="expenseAmount" placeholder="Сумма" value="1000"><button class="small-btn" id="addExpenseBtn">✅</button></div></div>
+        <div class="card"><div style="display:flex;justify-content:space-between;"><h3>🐷 Копилка</h3><span id="piggyBalance">0 ₽</span></div><div class="inline-input"><input type="number" id="piggyAmount" value="1000"><button class="small-btn" id="topUpPiggyBtn">➕ Пополнить</button></div><button class="btn-danger btn" id="clearPiggyBtn">Очистить</button></div>
+        <div class="section-title"><span>📂 Категории</span><button class="btn-outline" id="addCategoryBtn">+</button></div>
         <div id="categoriesList"></div>
-
-        <div class="section-title"><span>🎯 Мои цели</span><button class="btn-outline" id="addGoalBtn">+ Цель</button></div>
+        <div class="section-title"><span>🎯 Цели</span><button class="btn-outline" id="addGoalBtn">+</button></div>
         <div id="goalsList"></div>
+        <div class="card"><h3>📜 История</h3><div id="historyLog" class="history-log"></div></div>
+    </div>
 
-        <div class="card">
-            <h3>📜 История операций (финансы)</h3>
-            <div id="historyLog" class="history-log"></div>
+    <!-- ========== ФЕРМА ========== -->
+    <div id="farmSection" class="section">
+        <div class="card farm-card">
+            <h2>🌾 Моя ферма</h2>
+            <div class="farm-stats"><span>💰 Монеты: <span id="farmCoins">0</span></span><span>🌱 Грядок: 6</span></div>
+            
+            <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                <button id="showShopBtn" class="btn" style="background:var(--btn-secondary);">🛒 Магазин</button>
+                <button id="showMarketBtn" class="btn" style="background:var(--btn-success);">🏪 Рынок (продажа)</button>
+                <button id="showGardenBtn" class="btn">🌱 Огород</button>
+            </div>
+
+            <!-- Магазин -->
+            <div id="shopPanel">
+                <h3>🛒 Магазин семян</h3>
+                <div class="shop-grid" id="shopGrid"></div>
+                <div style="margin-top: 15px;"><button id="viewCartBtn" class="btn-outline btn">🛍️ Корзина (<span id="cartCount">0</span>)</button></div>
+            </div>
+
+            <!-- Рынок (продажа урожая) -->
+            <div id="marketPanel" style="display:none;">
+                <h3>🏪 Рынок</h3>
+                <div class="market-grid" id="marketGrid"></div>
+                <div id="marketStatus" style="margin-top: 10px; font-size:12px; opacity:0.8;"></div>
+            </div>
+
+            <!-- Огород -->
+            <div id="gardenPanel" style="display:none;">
+                <h3>🌱 Мой огород</h3>
+                <div class="garden-grid" id="gardenGrid"></div>
+                <div style="margin-top: 10px; font-size:12px;">🌿 Нажмите на грядку, чтобы посадить семя из инвентаря</div>
+                <div id="inventoryList" style="margin-top: 10px; background:rgba(0,0,0,0.2); border-radius:16px; padding:10px;"></div>
+            </div>
+        </div>
+
+        <!-- Модальное окно корзины -->
+        <div id="cartModal" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.7); z-index:1000; align-items:center; justify-content:center;">
+            <div style="background:var(--card-bg); max-width:500px; width:90%; border-radius:24px; padding:20px; max-height:80%; overflow-y:auto;">
+                <h3>🛍️ Корзина</h3>
+                <div id="cartItems"></div>
+                <div style="margin-top:15px;"><button id="checkoutBtn" class="btn btn-success">💎 Купить (<span id="cartTotal">0</span> монет)</button></div>
+                <button id="closeCartBtn" class="btn-outline btn" style="margin-top:10px;">Закрыть</button>
+            </div>
         </div>
     </div>
 
-    <!-- ==================== РАЗДЕЛ КЛИКЕР (ПОЛНОСТЬЮ ОТДЕЛЬНЫЙ) ==================== -->
-    <div id="clickerSection" class="section">
-        <div class="card clicker-card">
-            <h2>🪙 VK Coin Clicker</h2>
-            <div class="coin-image" id="clickCoin">🪙</div>
-            <div class="click-counter" id="clickerCoins">0</div>
-            <div class="click-per-click">⚡ За клик: +<span id="clickPower">1</span> монет</div>
-            
-            <div class="stats-row">
-                <span>🎯 Крит. шанс: <span id="critChance">0</span>%</span>
-                <span>💥 Крит. множитель: x<span id="critMultiplier">2</span></span>
-                <span>⚡ Энергия: <span id="energyBonus">0</span>%</span>
+    <!-- ========== КАЛЕНДАРЬ СМЕН 2/2 ========== -->
+    <div id="calendarSection" class="section">
+        <div class="card">
+            <div class="calendar-header">
+                <button id="calPrevMonth">◀</button>
+                <h3 id="calMonthYear"></h3>
+                <button id="calNextMonth">▶</button>
             </div>
-            
-            <div class="upgrade-grid">
-                <button class="upgrade-btn" id="upgradeClickBtn">
-                    <div class="upgrade-name">💪 Усиление клика</div>
-                    <div class="upgrade-desc">+1 монета за клик</div>
-                    <div class="upgrade-price">Цена: <span id="clickUpgradePrice">100</span> 🪙</div>
-                </button>
-                <button class="upgrade-btn" id="upgradeAutoBtn">
-                    <div class="upgrade-name">🤖 Автокликер</div>
-                    <div class="upgrade-desc">+0.5 монет/сек</div>
-                    <div class="upgrade-price">Цена: <span id="autoUpgradePrice">500</span> 🪙</div>
-                </button>
-                <button class="upgrade-btn" id="upgradeCritBtn">
-                    <div class="upgrade-name">🎯 Критический удар</div>
-                    <div class="upgrade-desc">+5% шанс крита (x2)</div>
-                    <div class="upgrade-price">Цена: <span id="critUpgradePrice">1000</span> 🪙</div>
-                </button>
-                <button class="upgrade-btn" id="upgradeCritDamageBtn">
-                    <div class="upgrade-name">💥 Смертельный крит</div>
-                    <div class="upgrade-desc">+0.5x к множителю крита</div>
-                    <div class="upgrade-price">Цена: <span id="critDmgPrice">2000</span> 🪙</div>
-                </button>
-                <button class="upgrade-btn" id="upgradeEnergyBtn">
-                    <div class="upgrade-name">⚡ Энергия</div>
-                    <div class="upgrade-desc">+10% к доходу с кликов</div>
-                    <div class="upgrade-price">Цена: <span id="energyPrice">3000</span> 🪙</div>
-                </button>
-                <button class="upgrade-btn" id="upgradeDoubleBtn">
-                    <div class="upgrade-name">🔄 Удвоение прибыли</div>
-                    <div class="upgrade-desc">+5% шанс двойного дохода</div>
-                    <div class="upgrade-price">Цена: <span id="doublePrice">5000</span> 🪙</div>
-                </button>
-            </div>
-            <div id="autoStatus" style="font-size: 12px; margin-top: 10px; opacity: 0.8;"></div>
-            <div class="stats-row" style="margin-top: 15px;">
-                <span>🔄 Шанс удвоения: <span id="doubleChance">0</span>%</span>
-                <span>📊 Доход в сек: <span id="incomePerSec">0</span>/сек</span>
-            </div>
-            
-            <!-- Отдельная история кликера -->
-            <div class="clicker-history">
-                <div style="font-weight: bold; margin-bottom: 8px;">📜 История кликов:</div>
-                <div id="clickerHistoryLog"></div>
-            </div>
+            <div class="calendar-weekdays"><span>Пн</span><span>Вт</span><span>Ср</span><span>Чт</span><span>Пт</span><span>Сб</span><span>Вс</span></div>
+            <div class="calendar-days" id="calendarDays"></div>
+            <div class="shift-summary" id="shiftSummary"></div>
+            <div style="margin-top: 15px; font-size: 13px;">📌 Нажмите на день, чтобы отметить смену (график 2/2)</div>
         </div>
     </div>
 </div>
 
 <script>
-    // ========== КЛИКЕР (ПОЛНОСТЬЮ НЕЗАВИСИМЫЙ) ==========
-    let clickerCoins = 0;
-    let clickPower = 1;
-    let autoClickerLevel = 0;
-    let critChance = 0;
-    let critMultiplier = 2;
-    let energyBonus = 0;
-    let doubleChance = 0;
-    let autoInterval = null;
-    let clickerHistory = []; // отдельная история для кликера
-    
-    function addClickerHistory(msg) {
-        const time = new Date().toLocaleTimeString();
-        clickerHistory.unshift(`[${time}] ${msg}`);
-        if (clickerHistory.length > 20) clickerHistory.pop();
-        updateClickerHistoryUI();
-        saveClickerData();
-    }
-    
-    function updateClickerHistoryUI() {
-        const container = document.getElementById('clickerHistoryLog');
-        if (!container) return;
-        if (clickerHistory.length === 0) {
-            container.innerHTML = '<div style="opacity:0.6;">Пока нет действий...</div>';
-            return;
-        }
-        container.innerHTML = clickerHistory.map(h => `<div class="clicker-history-item">${h}</div>`).join('');
-    }
-    
-    const getClickUpgradePrice = () => 100 + (clickPower - 1) * 80;
-    const getAutoUpgradePrice = () => 500 + autoClickerLevel * 150;
-    const getCritUpgradePrice = () => 1000 + (critChance / 5) * 200;
-    const getCritDmgPrice = () => 2000 + (critMultiplier - 2) * 500;
-    const getEnergyPrice = () => 3000 + (energyBonus / 10) * 400;
-    const getDoublePrice = () => 5000 + (doubleChance / 5) * 300;
-    
-    function loadClickerData() {
-        clickerCoins = parseFloat(localStorage.getItem('clickerCoins')) || 0;
-        clickPower = parseInt(localStorage.getItem('clickPower')) || 1;
-        autoClickerLevel = parseInt(localStorage.getItem('autoClickerLevel')) || 0;
-        critChance = parseInt(localStorage.getItem('critChance')) || 0;
-        critMultiplier = parseFloat(localStorage.getItem('critMultiplier')) || 2;
-        energyBonus = parseInt(localStorage.getItem('energyBonus')) || 0;
-        doubleChance = parseInt(localStorage.getItem('doubleChance')) || 0;
-        const savedHistory = localStorage.getItem('clickerHistory');
-        if (savedHistory) {
-            try { clickerHistory = JSON.parse(savedHistory); } catch(e) { clickerHistory = []; }
-        }
-        if (clickerHistory.length === 0) addClickerHistory('🎮 Добро пожаловать в кликер!');
-        updateClickerUI();
-        startAutoClicker();
-    }
-    
-    function saveClickerData() {
-        localStorage.setItem('clickerCoins', clickerCoins);
-        localStorage.setItem('clickPower', clickPower);
-        localStorage.setItem('autoClickerLevel', autoClickerLevel);
-        localStorage.setItem('critChance', critChance);
-        localStorage.setItem('critMultiplier', critMultiplier);
-        localStorage.setItem('energyBonus', energyBonus);
-        localStorage.setItem('doubleChance', doubleChance);
-        localStorage.setItem('clickerHistory', JSON.stringify(clickerHistory));
-    }
-    
-    function calculateClickIncome() {
-        let base = clickPower;
-        if (energyBonus > 0) base = base * (1 + energyBonus / 100);
-        return base;
-    }
-    
-    function clickCoin() {
-        let income = calculateClickIncome();
-        let isCrit = false;
-        let isDouble = false;
-        let critMsg = '';
-        
-        if (critChance > 0 && Math.random() * 100 < critChance) {
-            income = income * critMultiplier;
-            isCrit = true;
-        }
-        if (doubleChance > 0 && Math.random() * 100 < doubleChance) {
-            income = income * 2;
-            isDouble = true;
-        }
-        
-        clickerCoins += income;
-        
-        let msg = `+${income.toFixed(1)} 🪙`;
-        if (isCrit) msg += ' 💥КРИТ!';
-        if (isDouble) msg += ' 🔄x2!';
-        addClickerHistory(msg);
-        
-        saveClickerData();
-        updateClickerUI();
-        
-        const coin = document.getElementById('clickCoin');
-        coin.style.transform = 'scale(1.2)';
-        setTimeout(() => { if(coin) coin.style.transform = ''; }, 100);
-    }
-    
-    function upgradeClick() {
-        const price = getClickUpgradePrice();
-        if (clickerCoins >= price) {
-            clickerCoins -= price;
-            clickPower++;
-            addClickerHistory(`🔨 Улучшение клика до +${clickPower} 🪙 (цена ${Math.floor(price)} 🪙)`);
-            saveClickerData();
-            updateClickerUI();
-        } else alert(`Не хватает! Нужно ${Math.floor(price)} 🪙`);
-    }
-    
-    function upgradeAuto() {
-        const price = getAutoUpgradePrice();
-        if (clickerCoins >= price) {
-            clickerCoins -= price;
-            autoClickerLevel++;
-            addClickerHistory(`🤖 Автокликер ур.${autoClickerLevel} (цена ${Math.floor(price)} 🪙)`);
-            saveClickerData();
-            updateClickerUI();
-            startAutoClicker();
-        } else alert(`Не хватает! Нужно ${Math.floor(price)} 🪙`);
-    }
-    
-    function upgradeCrit() {
-        const price = getCritUpgradePrice();
-        if (clickerCoins >= price && critChance < 75) {
-            clickerCoins -= price;
-            critChance += 5;
-            if (critChance > 75) critChance = 75;
-            addClickerHistory(`🎯 Крит. шанс +5% (теперь ${critChance}%)`);
-            saveClickerData();
-            updateClickerUI();
-        } else if (critChance >= 75) alert('Максимальный шанс крита 75%');
-        else alert(`Не хватает! Нужно ${Math.floor(price)} 🪙`);
-    }
-    
-    function upgradeCritDamage() {
-        const price = getCritDmgPrice();
-        if (clickerCoins >= price && critMultiplier < 5) {
-            clickerCoins -= price;
-            critMultiplier += 0.5;
-            addClickerHistory(`💥 Множитель крита +0.5x (теперь x${critMultiplier})`);
-            saveClickerData();
-            updateClickerUI();
-        } else if (critMultiplier >= 5) alert('Максимальный множитель x5');
-        else alert(`Не хватает! Нужно ${Math.floor(price)} 🪙`);
-    }
-    
-    function upgradeEnergy() {
-        const price = getEnergyPrice();
-        if (clickerCoins >= price && energyBonus < 200) {
-            clickerCoins -= price;
-            energyBonus += 10;
-            if (energyBonus > 200) energyBonus = 200;
-            addClickerHistory(`⚡ Бонус энергии +10% (теперь +${energyBonus}%)`);
-            saveClickerData();
-            updateClickerUI();
-        } else if (energyBonus >= 200) alert('Максимальный бонус энергии 200%');
-        else alert(`Не хватает! Нужно ${Math.floor(price)} 🪙`);
-    }
-    
-    function upgradeDouble() {
-        const price = getDoublePrice();
-        if (clickerCoins >= price && doubleChance < 50) {
-            clickerCoins -= price;
-            doubleChance += 5;
-            if (doubleChance > 50) doubleChance = 50;
-            addClickerHistory(`🔄 Шанс удвоения +5% (теперь ${doubleChance}%)`);
-            saveClickerData();
-            updateClickerUI();
-        } else if (doubleChance >= 50) alert('Максимальный шанс удвоения 50%');
-        else alert(`Не хватает! Нужно ${Math.floor(price)} 🪙`);
-    }
-    
-    function startAutoClicker() {
-        if (autoInterval) clearInterval(autoInterval);
-        if (autoClickerLevel > 0) {
-            autoInterval = setInterval(() => {
-                const autoIncome = autoClickerLevel * 0.5;
-                clickerCoins += autoIncome;
-                saveClickerData();
-                updateClickerUI();
-            }, 1000);
-        }
-    }
-    
-    function updateClickerUI() {
-        document.getElementById('clickerCoins').innerText = Math.floor(clickerCoins * 10) / 10;
-        document.getElementById('clickPower').innerText = clickPower;
-        document.getElementById('clickUpgradePrice').innerText = Math.floor(getClickUpgradePrice());
-        document.getElementById('autoUpgradePrice').innerText = Math.floor(getAutoUpgradePrice());
-        document.getElementById('critUpgradePrice').innerText = Math.floor(getCritUpgradePrice());
-        document.getElementById('critDmgPrice').innerText = Math.floor(getCritDmgPrice());
-        document.getElementById('energyPrice').innerText = Math.floor(getEnergyPrice());
-        document.getElementById('doublePrice').innerText = Math.floor(getDoublePrice());
-        document.getElementById('critChance').innerText = critChance;
-        document.getElementById('critMultiplier').innerText = critMultiplier.toFixed(1);
-        document.getElementById('energyBonus').innerText = energyBonus;
-        document.getElementById('doubleChance').innerText = doubleChance;
-        const perSec = (autoClickerLevel * 0.5).toFixed(1);
-        document.getElementById('incomePerSec').innerHTML = perSec + '/сек';
-        if (autoClickerLevel > 0) {
-            document.getElementById('autoStatus').innerHTML = `🤖 Автокликер ур.${autoClickerLevel} | +${perSec} монет/сек`;
-        } else {
-            document.getElementById('autoStatus').innerHTML = '💡 Купите автокликер для пассивного дохода';
-        }
-    }
-    
-    // ========== ФИНАНСЫ (полностью отдельные данные) ==========
-    let monthlyData = {};
-    let currentYear = 2026;
-    let currentMonth = 0;
-    let categories = {};
-    let goals = {};
-    let nextCatId = 1;
-    let nextGoalId = 1;
-    let transactions = [];
-    let nextTransactionId = 1;
-    
-    function getMonthKey(y, m) { return `${y}-${String(m+1).padStart(2,'0')}`; }
-    function getCurrentKey() { return getMonthKey(currentYear, currentMonth); }
-    function getMonthData(y, m) {
-        const key = getMonthKey(y, m);
-        if (!monthlyData[key]) monthlyData[key] = { mainBalance: 0 };
-        return monthlyData[key];
-    }
-    
-    function recalcBalanceForCurrentMonth() {
-        const key = getCurrentKey();
-        let balance = 0;
-        transactions.forEach(t => { if (t.monthKey === key && t.type !== 'system') balance += t.amount; });
-        getMonthData(currentYear, currentMonth).mainBalance = balance;
-    }
-    
-    function addTransaction(type, amount, desc, catId = null) {
-        transactions.push({ id: nextTransactionId++, timestamp: Date.now(), text: desc, amount, type, monthKey: getCurrentKey(), categoryId: catId });
-        recalcBalanceForCurrentMonth();
-        saveFinanceData();
-        refreshFinanceUI();
-    }
-    
-    function addFinanceHistory(msg) {
-        transactions.push({ id: nextTransactionId++, timestamp: Date.now(), text: msg, amount: 0, type: 'system', monthKey: getCurrentKey() });
-        saveFinanceData();
-        refreshFinanceUI();
-    }
-    
-    function saveFinanceData() {
-        const store = { monthlyData, categories, goals, nextCatId, nextGoalId, transactions, nextTransactionId };
-        localStorage.setItem('financeTracker', JSON.stringify(store));
-        if (localStorage.getItem('piggyBalance') === null) localStorage.setItem('piggyBalance', '0');
-    }
-    
-    function loadFinanceData() {
-        const raw = localStorage.getItem('financeTracker');
-        if (raw) {
-            try {
-                const data = JSON.parse(raw);
-                monthlyData = data.monthlyData || {};
-                categories = data.categories || {};
-                goals = data.goals || {};
-                nextCatId = data.nextCatId || 1;
-                nextGoalId = data.nextGoalId || 1;
-                transactions = data.transactions || [];
-                nextTransactionId = data.nextTransactionId || 1;
-            } catch(e) {}
-        }
-        if (Object.keys(categories).length === 0) {
-            categories[nextCatId++] = { name: 'Транспорт', limit: 5000 };
-            categories[nextCatId++] = { name: 'Продукты', limit: 10000 };
-        }
-        if (Object.keys(goals).length === 0) {
-            goals[nextGoalId++] = { name: 'Новый ноутбук', targetAmount: 150000, targetMonth: 12, targetYear: currentYear, currentAmount: 0 };
-        }
-        if (localStorage.getItem('piggyBalance') === null) localStorage.setItem('piggyBalance', '0');
-        recalcBalanceForCurrentMonth();
-    }
-    
-    function resetAllData() {
-        if (confirm('⚠️ Сбросить ВСЕ данные? (Финансы, категории, цели, историю И кликер полностью)')) {
-            // Сброс финансов
-            monthlyData = {};
-            categories = {};
-            goals = {};
-            transactions = [];
-            nextCatId = 1;
-            nextGoalId = 1;
-            nextTransactionId = 1;
-            localStorage.setItem('piggyBalance', '0');
-            categories[nextCatId++] = { name: 'Транспорт', limit: 5000 };
-            categories[nextCatId++] = { name: 'Продукты', limit: 10000 };
-            goals[nextGoalId++] = { name: 'Новый ноутбук', targetAmount: 150000, targetMonth: 12, targetYear: currentYear, currentAmount: 0 };
-            
-            // Сброс кликера
-            clickerCoins = 0;
-            clickPower = 1;
-            autoClickerLevel = 0;
-            critChance = 0;
-            critMultiplier = 2;
-            energyBonus = 0;
-            doubleChance = 0;
-            clickerHistory = [];
-            if (autoInterval) clearInterval(autoInterval);
-            saveClickerData();
-            addClickerHistory('🔄 Кликер сброшен до начальных настроек');
-            
-            saveFinanceData();
-            startAutoClicker();
-            refreshFinanceUI();
-            updateClickerUI();
-            addFinanceHistory('🔄 Полный сброс всех финансовых данных');
-        }
-    }
-    
-    // UI финансы
-    function renderCategories() {
-        const container = document.getElementById('categoriesList');
-        if (Object.keys(categories).length === 0) { container.innerHTML = '<div class="card">Нет категорий</div>'; return; }
-        let html = '';
-        for (let id in categories) {
-            html += `<div class="cat-item"><div><strong>${escapeHtml(categories[id].name)}</strong><br><span style="font-size:12px;">Лимит: ${categories[id].limit.toLocaleString()} ₽</span></div>
-                    <div><button class="icon-btn edit-cat" data-id="${id}">✏️</button> <button class="icon-btn del-cat" data-id="${id}">❌</button></div></div>`;
-        }
-        container.innerHTML = html;
-        document.querySelectorAll('.edit-cat').forEach(btn => btn.addEventListener('click', () => editCategory(btn.dataset.id)));
-        document.querySelectorAll('.del-cat').forEach(btn => btn.addEventListener('click', () => deleteCategory(btn.dataset.id)));
-        updateExpenseSelect();
-    }
-    
-    function updateExpenseSelect() {
-        const sel = document.getElementById('expenseCategorySelect');
-        sel.innerHTML = '<option value="">Выберите категорию</option>';
-        for (let id in categories) sel.innerHTML += `<option value="${id}">${escapeHtml(categories[id].name)}</option>`;
-    }
-    
-    function editCategory(id) {
-        let n = prompt('Новое название:', categories[id].name);
-        if (n) categories[id].name = n;
-        let l = prompt('Новый лимит:', categories[id].limit);
-        if (l && !isNaN(parseFloat(l))) categories[id].limit = parseFloat(l);
-        refreshFinanceUI();
-    }
-    function deleteCategory(id) { delete categories[id]; refreshFinanceUI(); }
-    function addCategory() {
-        let n = prompt('Название категории:');
-        if (!n) return;
-        let l = prompt('Лимит:', '5000');
-        if (l && !isNaN(parseFloat(l))) categories[nextCatId++] = { name: n, limit: parseFloat(l) };
-        refreshFinanceUI();
-    }
-    
-    function addIncome(amt, type) {
-        let amount = parseFloat(amt);
-        if (isNaN(amount) || amount <= 0) return;
-        let reserve = 0;
-        for (let id in categories) reserve += categories[id].limit;
-        let available = Math.max(0, amount - reserve);
-        addTransaction('income', available, `${type}: ${amount.toLocaleString()} ₽ (резерв ${reserve.toLocaleString()} ₽)`, null);
-    }
-    function addExpense() {
-        const catId = document.getElementById('expenseCategorySelect').value;
-        if (!catId) { alert('Выберите категорию'); return; }
-        const amt = parseFloat(document.getElementById('expenseAmount').value);
-        if (isNaN(amt) || amt <= 0) return;
-        const bal = getMonthData(currentYear, currentMonth).mainBalance;
-        if (bal < amt) { alert('Недостаточно средств'); return; }
-        addTransaction('expense', -amt, `Расход: ${categories[catId].name} -${amt.toLocaleString()} ₽`, catId);
-    }
-    
-    function topUpPiggy() {
-        let sum = parseFloat(document.getElementById('piggyAmount').value);
-        if (isNaN(sum) || sum <= 0) return;
-        const bal = getMonthData(currentYear, currentMonth).mainBalance;
-        if (bal < sum) { alert('Недостаточно средств'); return; }
-        addTransaction('expense', -sum, `🐖 Пополнение копилки: ${sum.toLocaleString()} ₽`, null);
-        let curr = parseFloat(localStorage.getItem('piggyBalance')) || 0;
-        localStorage.setItem('piggyBalance', curr + sum);
-        refreshFinanceUI();
-    }
-    function clearPiggy() { if(confirm('Очистить копилку?')) { localStorage.setItem('piggyBalance', '0'); refreshFinanceUI(); } }
-    
-    function renderGoals() {
-        const container = document.getElementById('goalsList');
-        if (Object.keys(goals).length === 0) { container.innerHTML = '<div class="card">Нет целей</div>'; return; }
-        let html = '';
-        for (let id in goals) {
-            const g = goals[id];
-            let saved = g.currentAmount || 0;
-            let percent = (saved / g.targetAmount) * 100;
-            html += `<div class="goal-item"><div><strong>${escapeHtml(g.name)}</strong> — ${saved.toLocaleString()} ₽ / ${g.targetAmount.toLocaleString()} ₽<div class="goal-progress"><div class="goal-fill" style="width:${Math.min(100,percent)}%"></div></div>
-            <div class="rec-box">🎯 Срок: ${g.targetMonth}.${g.targetYear}</div>
-            <div class="inline-input"><input type="number" id="goalSaveInput-${id}" value="1000"><button class="small-btn save-goal" data-id="${id}">💰 Отложить</button></div></div>
-            <div><button class="icon-btn edit-goal" data-id="${id}">✏️</button> <button class="icon-btn del-goal" data-id="${id}">❌</button></div></div>`;
-        }
-        container.innerHTML = html;
-        document.querySelectorAll('.save-goal').forEach(btn => btn.addEventListener('click', () => {
-            const id = btn.dataset.id;
-            let val = parseFloat(document.getElementById(`goalSaveInput-${id}`).value);
-            if (isNaN(val) || val <= 0) return;
-            const bal = getMonthData(currentYear, currentMonth).mainBalance;
-            if (bal < val) { alert('Недостаточно средств'); return; }
-            addTransaction('expense', -val, `🎯 Цель "${goals[id].name}" +${val.toLocaleString()} ₽`, null);
-            goals[id].currentAmount = (goals[id].currentAmount || 0) + val;
-            refreshFinanceUI();
-        }));
-        document.querySelectorAll('.edit-goal').forEach(btn => btn.addEventListener('click', () => editGoal(btn.dataset.id)));
-        document.querySelectorAll('.del-goal').forEach(btn => btn.addEventListener('click', () => deleteGoal(btn.dataset.id)));
-    }
-    function addGoal() {
-        let n = prompt('Название цели:');
-        if (!n) return;
-        let a = parseFloat(prompt('Сумма:'));
-        if (isNaN(a)) return;
-        let m = parseInt(prompt('Месяц (1-12):', '12'));
-        let y = parseInt(prompt('Год:', currentYear+1));
-        goals[nextGoalId++] = { name: n, targetAmount: a, targetMonth: m, targetYear: y, currentAmount: 0 };
-        refreshFinanceUI();
-    }
-    function editGoal(id) {
-        let g = goals[id];
-        let n = prompt('Название:', g.name); if(n) g.name = n;
-        let a = parseFloat(prompt('Сумма:', g.targetAmount)); if(!isNaN(a)) g.targetAmount = a;
-        let m = parseInt(prompt('Месяц:', g.targetMonth)); if(!isNaN(m)) g.targetMonth = m;
-        let y = parseInt(prompt('Год:', g.targetYear)); if(!isNaN(y)) g.targetYear = y;
-        refreshFinanceUI();
-    }
-    function deleteGoal(id) { delete goals[id]; refreshFinanceUI(); }
-    
-    function renderHistory() {
-        const container = document.getElementById('historyLog');
-        const monthTxs = transactions.filter(t => t.monthKey === getCurrentKey()).sort((a,b) => b.timestamp - a.timestamp);
-        if (!monthTxs.length) { container.innerHTML = '<div>Нет операций</div>'; return; }
-        let html = '';
-        monthTxs.forEach(t => {
-            let d = new Date(t.timestamp);
-            html += `<div class="history-item">[${d.toLocaleDateString()} ${d.toLocaleTimeString()}] ${escapeHtml(t.text)}</div>`;
-        });
-        container.innerHTML = html;
-    }
-    
-    function changeMonth(delta) {
-        let nm = currentMonth + delta, ny = currentYear;
-        if (nm < 0) { nm = 11; ny--; }
-        else if (nm > 11) { nm = 0; ny++; }
-        currentYear = ny; currentMonth = nm;
-        refreshFinanceUI();
-    }
-    
-    let touchStartX = 0;
-    document.addEventListener('touchstart', e => { touchStartX = e.changedTouches[0].screenX; });
-    document.addEventListener('touchend', e => {
-        if (!touchStartX) return;
-        const diff = e.changedTouches[0].screenX - touchStartX;
-        if (Math.abs(diff) > 50 && document.getElementById('financeSection').classList.contains('active-section')) changeMonth(diff > 0 ? -1 : 1);
-        touchStartX = 0;
-    });
-    
-    function refreshFinanceUI() {
-        const monthData = getMonthData(currentYear, currentMonth);
-        document.getElementById('mainBalance').innerHTML = (monthData.mainBalance || 0).toLocaleString('ru-RU') + ' ₽';
-        const months = ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
-        document.getElementById('currentMonthLabel').innerText = `${months[currentMonth]} ${currentYear}`;
-        document.getElementById('piggyBalance').innerText = (parseFloat(localStorage.getItem('piggyBalance')) || 0).toLocaleString('ru-RU') + ' ₽';
-        renderCategories();
-        renderGoals();
-        renderHistory();
-        saveFinanceData();
-    }
-    
+    // ========== ОБЩИЕ ФУНКЦИИ ==========
     function escapeHtml(str) { return str.replace(/[&<>]/g, m => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;' }[m])); }
     
-    function switchSection(section) {
-        document.querySelectorAll('.section').forEach(s => s.classList.remove('active-section'));
-        document.getElementById(`${section}Section`).classList.add('active-section');
-        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-        document.querySelector(`.tab-btn[data-section="${section}"]`).classList.add('active');
-        if (section === 'clicker') updateClickerUI();
-        else refreshFinanceUI();
+    // ========== ФЕРМА ==========
+    let farmCoins = 500;
+    let inventory = {}; // { seedId: quantity }
+    let garden = [null, null, null, null, null, null]; // 6 грядок: null или { seedId, plantName, plantedAt, growTime, harvestValue }
+    let cart = []; // { id, name, price, sellPrice }
+    let marketListings = []; // товары на продажу { id, name, quantity, pricePerUnit }
+    
+    const seeds = {
+        wheat: { name: "🌾 Пшеница", price: 30, growTime: 30000, harvestValue: 60, emoji: "🌾" },
+        carrot: { name: "🥕 Морковь", price: 40, growTime: 45000, harvestValue: 90, emoji: "🥕" },
+        tomato: { name: "🍅 Помидор", price: 60, growTime: 60000, harvestValue: 140, emoji: "🍅" },
+        potato: { name: "🥔 Картофель", price: 50, growTime: 75000, harvestValue: 120, emoji: "🥔" },
+        corn: { name: "🌽 Кукуруза", price: 80, growTime: 90000, harvestValue: 200, emoji: "🌽" }
+    };
+    
+    function saveFarmData() {
+        localStorage.setItem('farmCoins', farmCoins);
+        localStorage.setItem('inventory', JSON.stringify(inventory));
+        localStorage.setItem('garden', JSON.stringify(garden.map(p => p ? { ...p, plantedAt: p.plantedAt } : null)));
+        localStorage.setItem('marketListings', JSON.stringify(marketListings));
     }
     
-    function initTheme() {
-        const isDark = localStorage.getItem('theme') === 'dark';
-        if (isDark || (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-            document.body.classList.add('dark');
-            document.getElementById('themeToggleBtn').innerHTML = '☀️ Светлая тема';
+    function loadFarmData() {
+        farmCoins = parseFloat(localStorage.getItem('farmCoins')) || 500;
+        inventory = JSON.parse(localStorage.getItem('inventory')) || {};
+        const savedGarden = JSON.parse(localStorage.getItem('garden'));
+        if (savedGarden) garden = savedGarden.map(p => p ? { ...p, plantedAt: p.plantedAt } : null);
+        marketListings = JSON.parse(localStorage.getItem('marketListings')) || [];
+        updateFarmUI();
+        startGardenCheck();
+    }
+    
+    function updateFarmUI() {
+        document.getElementById('farmCoins').innerText = Math.floor(farmCoins);
+        renderShop();
+        renderMarket();
+        renderGarden();
+        renderInventory();
+        updateCartUI();
+    }
+    
+    function renderShop() {
+        const container = document.getElementById('shopGrid');
+        if (!container) return;
+        container.innerHTML = '';
+        for (let [id, seed] of Object.entries(seeds)) {
+            container.innerHTML += `<div class="shop-item" data-seed="${id}">
+                <div style="font-size:24px;">${seed.emoji}</div>
+                <div>${seed.name}</div>
+                <div style="font-size:11px;">💰 ${seed.price} монет</div>
+                <div style="font-size:10px;">🌱 ${seed.growTime/1000} сек</div>
+                <button class="small-btn add-to-cart" data-id="${id}" data-name="${seed.name}" data-price="${seed.price}" data-sell="${seed.harvestValue}" style="margin-top:5px; padding:4px 8px;">В корзину</button>
+            </div>`;
+        }
+        document.querySelectorAll('.add-to-cart').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const id = btn.dataset.id;
+                const seed = seeds[id];
+                cart.push({ id, name: seed.name, price: seed.price, sellPrice: seed.harvestValue });
+                updateCartUI();
+            });
+        });
+    }
+    
+    function updateCartUI() {
+        document.getElementById('cartCount').innerText = cart.length;
+        const cartTotal = cart.reduce((sum, item) => sum + item.price, 0);
+        document.getElementById('cartTotal').innerText = cartTotal;
+        const cartItemsDiv = document.getElementById('cartItems');
+        if (cartItemsDiv) {
+            if (cart.length === 0) cartItemsDiv.innerHTML = '<div>Корзина пуста</div>';
+            else cartItemsDiv.innerHTML = cart.map((item, idx) => `<div class="cart-item">${item.name} - ${item.price} монет <button class="remove-from-cart" data-idx="${idx}">❌</button></div>`).join('');
+            document.querySelectorAll('.remove-from-cart').forEach(btn => {
+                btn.addEventListener('click', () => { cart.splice(parseInt(btn.dataset.idx), 1); updateCartUI(); });
+            });
         }
     }
-    function toggleTheme() {
-        document.body.classList.toggle('dark');
-        const isDark = document.body.classList.contains('dark');
-        localStorage.setItem('theme', isDark ? 'dark' : 'light');
-        document.getElementById('themeToggleBtn').innerHTML = isDark ? '☀️ Светлая тема' : '🌙 Тёмная тема';
+    
+    function checkout() {
+        if (cart.length === 0) return;
+        const total = cart.reduce((sum, item) => sum + item.price, 0);
+        if (farmCoins >= total) {
+            farmCoins -= total;
+            for (let item of cart) {
+                inventory[item.id] = (inventory[item.id] || 0) + 1;
+            }
+            cart = [];
+            updateCartUI();
+            updateFarmUI();
+            alert('Покупка совершена! Семена в инвентаре.');
+        } else {
+            alert(`Не хватает монет! Нужно ${total}, у вас ${Math.floor(farmCoins)}`);
+        }
     }
     
+    function renderInventory() {
+        const container = document.getElementById('inventoryList');
+        if (!container) return;
+        if (Object.keys(inventory).length === 0) { container.innerHTML = '📦 Инвентарь пуст'; return; }
+        container.innerHTML = Object.entries(inventory).map(([id, qty]) => `<span style="background:rgba(0,0,0,0.3); border-radius:20px; padding:4px 10px; margin:3px; display:inline-block;">${seeds[id]?.emoji || '🌱'} ${seeds[id]?.name || id}: ${qty} шт.</span>`).join('');
+    }
+    
+    function plantSeed(plotIndex) {
+        const seedId = prompt('Введите ID семени (wheat, carrot, tomato, potato, corn):\nДоступны: ' + Object.keys(inventory).filter(id => inventory[id] > 0).join(', '));
+        if (!seedId || !seeds[seedId] || !inventory[seedId] || inventory[seedId] <= 0) {
+            alert('Нет таких семян!');
+            return;
+        }
+        if (garden[plotIndex] && garden[plotIndex].plantedAt && Date.now() - garden[plotIndex].plantedAt < garden[plotIndex].growTime) {
+            alert('Здесь уже что-то растёт!');
+            return;
+        }
+        inventory[seedId]--;
+        garden[plotIndex] = {
+            seedId: seedId,
+            plantName: seeds[seedId].name,
+            plantedAt: Date.now(),
+            growTime: seeds[seedId].growTime,
+            harvestValue: seeds[seedId].harvestValue,
+            emoji: seeds[seedId].emoji
+        };
+        saveFarmData();
+        updateFarmUI();
+    }
+    
+    function harvestPlot(plotIndex) {
+        const plot = garden[plotIndex];
+        if (!plot) return;
+        const elapsed = Date.now() - plot.plantedAt;
+        if (elapsed >= plot.growTime) {
+            farmCoins += plot.harvestValue;
+            garden[plotIndex] = null;
+            saveFarmData();
+            updateFarmUI();
+            addFarmHistory(`🌾 Собран урожай ${plot.plantName} +${plot.harvestValue} монет`);
+        } else {
+            const remain = Math.ceil((plot.growTime - elapsed) / 1000);
+            alert(`Ещё не выросло! Осталось ${remain} сек`);
+        }
+    }
+    
+    function renderGarden() {
+        const container = document.getElementById('gardenGrid');
+        if (!container) return;
+        container.innerHTML = '';
+        for (let i = 0; i < garden.length; i++) {
+            const plot = garden[i];
+            let content = '';
+            let status = '';
+            if (!plot) { content = '🌱<br>Пусто'; status = 'empty'; }
+            else {
+                const elapsed = Date.now() - plot.plantedAt;
+                if (elapsed >= plot.growTime) { content = `${plot.emoji}<br>✅ ГОТОВО`; status = 'ready'; }
+                else { 
+                    const percent = Math.floor((elapsed / plot.growTime) * 100);
+                    content = `${plot.emoji}<br>${percent}%`;
+                    status = 'growing';
+                }
+            }
+            container.innerHTML += `<div class="plot ${status == 'ready' ? 'harvest-ready' : (plot ? 'planted' : '')}" data-plot="${i}">${content}</div>`;
+        }
+        document.querySelectorAll('.plot').forEach(el => {
+            const idx = parseInt(el.dataset.plot);
+            el.addEventListener('click', () => {
+                if (garden[idx] && Date.now() - garden[idx].plantedAt >= garden[idx].growTime) harvestPlot(idx);
+                else if (!garden[idx]) plantSeed(idx);
+            });
+        });
+    }
+    
+    function startGardenCheck() {
+        setInterval(() => { renderGarden(); saveFarmData(); }, 1000);
+    }
+    
+    function addFarmHistory(msg) { console.log(msg); }
+    
+    // Рынок (продажа урожая)
+    function renderMarket() {
+        const container = document.getElementById('marketGrid');
+        if (!container) return;
+        container.innerHTML = '';
+        for (let [id, seed] of Object.entries(seeds)) {
+            container.innerHTML += `<div class="market-item" data-seed="${id}">
+                <div style="font-size:24px;">${seed.emoji}</div>
+                <div>${seed.name}</div>
+                <div>💰 Цена: ${seed.harvestValue} монет</div>
+                <div class="inline-input" style="margin-top:5px;">
+                    <input type="number" id="qty-${id}" placeholder="Кол-во" value="1" style="padding:6px;">
+                    <button class="small-btn sell-item" data-id="${id}" data-price="${seed.harvestValue}" style="padding:6px 12px;">Продать</button>
+                </div>
+            </div>`;
+        }
+        document.querySelectorAll('.sell-item').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const seedId = btn.dataset.id;
+                const qty = parseInt(document.getElementById(`qty-${seedId}`).value);
+                if (isNaN(qty) || qty <= 0) return;
+                if (inventory[seedId] >= qty) {
+                    inventory[seedId] -= qty;
+                    const income = qty * seeds[seedId].harvestValue;
+                    farmCoins += income;
+                    saveFarmData();
+                    updateFarmUI();
+                    alert(`Продано ${qty} шт. ${seeds[seedId].name} за ${income} монет`);
+                } else {
+                    alert(`У вас только ${inventory[seedId] || 0} шт. ${seeds[seedId].name}`);
+                }
+            });
+        });
+    }
+    
+    function switchFarmPanel(panel) {
+        document.getElementById('shopPanel').style.display = panel === 'shop' ? 'block' : 'none';
+        document.getElementById('marketPanel').style.display = panel === 'market' ? 'block' : 'none';
+        document.getElementById('gardenPanel').style.display = panel === 'garden' ? 'block' : 'none';
+        if (panel === 'shop') renderShop();
+        if (panel === 'market') renderMarket();
+        if (panel === 'garden') { renderGarden(); renderInventory(); }
+    }
+    
+    // ========== КАЛЕНДАРЬ СМЕН 2/2 ==========
+    let calCurrentYear = 2026;
+    let calCurrentMonth = 0;
+    let shifts = {}; // key: "YYYY-MM-DD" -> true
+    
+    function loadShifts() {
+        const saved = localStorage.getItem('shifts');
+        if (saved) shifts = JSON.parse(saved);
+        else shifts = {};
+    }
+    function saveShifts() { localStorage.setItem('shifts', JSON.stringify(shifts)); }
+    function toggleShift(dateKey) {
+        if (shifts[dateKey]) delete shifts[dateKey];
+        else shifts[dateKey] = true;
+        saveShifts();
+        renderCalendar();
+    }
+    
+    function renderCalendar() {
+        const monthNames = ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
+        document.getElementById('calMonthYear').innerText = `${monthNames[calCurrentMonth]} ${calCurrentYear}`;
+        const firstDay = new Date(calCurrentYear, calCurrentMonth, 1);
+        const startWeekday = firstDay.getDay() || 7;
+        const daysInMonth = new Date(calCurrentYear, calCurrentMonth + 1, 0).getDate();
+        const today = new Date();
+        const todayStr = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
+        let html = '';
+        for (let i = 1; i < startWeekday; i++) html += '<div class="calendar-day"></div>';
+        for (let d = 1; d <= daysInMonth; d++) {
+            const dateKey = `${calCurrentYear}-${String(calCurrentMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+            const isShift = shifts[dateKey];
+            const isToday = dateKey === todayStr;
+            html += `<div class="calendar-day ${isShift ? 'shift' : ''} ${isToday ? 'today' : ''}" data-date="${dateKey}">${d}</div>`;
+        }
+        document.getElementById('calendarDays').innerHTML = html;
+        document.querySelectorAll('.calendar-day[data-date]').forEach(el => {
+            el.addEventListener('click', () => toggleShift(el.dataset.date));
+        });
+        const shiftCount = Object.values(shifts).filter(v => v === true && Object.keys(shifts).some(key => key.startsWith(`${calCurrentYear}-${String(calCurrentMonth+1).padStart(2,'0')}`))).length;
+        document.getElementById('shiftSummary').innerHTML = `📊 В этом месяце: ${shiftCount} смен(ы) | График 2/2 (рабочий день отмечается)`;
+    }
+    
+    function changeCalMonth(delta) {
+        let nm = calCurrentMonth + delta;
+        let ny = calCurrentYear;
+        if (nm < 0) { nm = 11; ny--; }
+        else if (nm > 11) { nm = 0; ny++; }
+        calCurrentYear = ny;
+        calCurrentMonth = nm;
+        renderCalendar();
+    }
+    
+    // ========== ФИНАНСЫ (упрощённо) ==========
+    let financeData = {};
+    let financeTransactions = [];
+    let financeCategories = { 1: { name: 'Транспорт', limit: 5000 }, 2: { name: 'Продукты', limit: 10000 } };
+    let financeGoals = {};
+    let nextCatId = 3;
+    
+    function loadFinance() {
+        const saved = localStorage.getItem('financeData');
+        if (saved) { try { const d = JSON.parse(saved); financeData = d.financeData || {}; financeTransactions = d.transactions || []; financeCategories = d.categories || financeCategories; financeGoals = d.goals || {}; } catch(e) {} }
+        if (Object.keys(financeGoals).length === 0) financeGoals[1] = { name: 'Новый ноутбук', target: 150000, current: 0, month: 12, year: 2026 };
+        updateFinanceUI();
+    }
+    function saveFinance() { localStorage.setItem('financeData', JSON.stringify({ financeData, transactions: financeTransactions, categories: financeCategories, goals: financeGoals })); }
+    function updateFinanceUI() {
+        const monthKey = `${currentYear}-${String(currentMonth+1).padStart(2,'0')}`;
+        const balance = (financeData[monthKey]?.balance || 0);
+        document.getElementById('mainBalance').innerHTML = balance.toLocaleString() + ' ₽';
+        const months = ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
+        document.getElementById('currentMonthLabel').innerText = `${months[currentMonth]} ${currentYear}`;
+        document.getElementById('piggyBalance').innerHTML = (parseFloat(localStorage.getItem('piggyBalance')) || 0).toLocaleString() + ' ₽';
+        renderCategoriesFinance();
+        renderGoalsFinance();
+        renderHistoryFinance();
+    }
+    function addFinanceTransaction(amount, desc) {
+        const monthKey = `${currentYear}-${String(currentMonth+1).padStart(2,'0')}`;
+        if (!financeData[monthKey]) financeData[monthKey] = { balance: 0 };
+        financeData[monthKey].balance += amount;
+        financeTransactions.unshift({ timestamp: Date.now(), text: desc, amount, monthKey });
+        saveFinance();
+        updateFinanceUI();
+    }
+    function addIncome(amt, type) { let reserve = Object.values(financeCategories).reduce((s,c)=>s+c.limit,0); let avail = Math.max(0, amt - reserve); addFinanceTransaction(avail, `${type}: ${amt}₽ (резерв ${reserve}₽)`); }
+    function renderCategoriesFinance() { document.getElementById('categoriesList').innerHTML = Object.entries(financeCategories).map(([id,c]) => `<div class="cat-item"><span><strong>${c.name}</strong> — лимит ${c.limit}₽</span><span><button class="icon-btn" onclick="editCat(${id})">✏️</button><button class="icon-btn" onclick="deleteCat(${id})">❌</button></span></div>`).join(''); }
+    function renderGoalsFinance() { document.getElementById('goalsList').innerHTML = Object.entries(financeGoals).map(([id,g]) => `<div class="goal-item"><div><strong>${g.name}</strong> — ${g.current}₽ / ${g.target}₽<div class="goal-progress"><div class="goal-fill" style="width:${(g.current/g.target*100)}%"></div></div><div>🎯 До ${g.month}.${g.year}</div></div><div><button class="icon-btn" onclick="editGoal(${id})">✏️</button><button class="icon-btn" onclick="deleteGoal(${id})">❌</button></div></div>`).join(''); }
+    function renderHistoryFinance() { document.getElementById('historyLog').innerHTML = financeTransactions.filter(t => t.monthKey === `${currentYear}-${String(currentMonth+1).padStart(2,'0')}`).slice(0,15).map(t => `<div class="history-item">[${new Date(t.timestamp).toLocaleTimeString()}] ${t.text}</div>`).join(''); }
+    window.editCat = (id) => { let n = prompt('Название:', financeCategories[id].name); if(n) financeCategories[id].name=n; let l = prompt('Лимит:', financeCategories[id].limit); if(l) financeCategories[id].limit=parseFloat(l); saveFinance(); updateFinanceUI(); };
+    window.deleteCat = (id) => { delete financeCategories[id]; saveFinance(); updateFinanceUI(); };
+    window.editGoal = (id) => { let g = financeGoals[id]; let n = prompt('Название:', g.name); if(n) g.name=n; let t = prompt('Цель:', g.target); if(t) g.target=parseFloat(t); let m = prompt('Месяц:', g.month); if(m) g.month=parseInt(m); let y = prompt('Год:', g.year); if(y) g.year=parseInt(y); saveFinance(); updateFinanceUI(); };
+    window.deleteGoal = (id) => { delete financeGoals[id]; saveFinance(); updateFinanceUI(); };
+    function addCategory() { let n = prompt('Название'); if(n) { let l = prompt('Лимит'); financeCategories[nextCatId++] = { name: n, limit: parseFloat(l) || 5000 }; saveFinance(); updateFinanceUI(); } }
+    function addGoal() { let n = prompt('Название'); if(n) { let t = parseFloat(prompt('Сумма')); financeGoals[nextCatId++] = { name: n, target: t, current: 0, month: 12, year: 2026 }; saveFinance(); updateFinanceUI(); } }
+    
+    let currentYear = 2026, currentMonth = 0;
+    function changeMonth(delta) { let nm = currentMonth + delta; if (nm < 0) { nm = 11; currentYear--; } else if (nm > 11) { nm = 0; currentYear++; } currentMonth = nm; updateFinanceUI(); }
+    
+    // ========== СБРОС ВСЕГО ==========
+    function resetAll() {
+        if (confirm('Сбросить ВСЕ данные?')) {
+            localStorage.clear();
+            location.reload();
+        }
+    }
+    
+    // ========== ТЕМА ==========
+    function initTheme() { if (localStorage.getItem('theme') === 'dark') document.body.classList.add('dark'); }
+    function toggleTheme() { document.body.classList.toggle('dark'); localStorage.setItem('theme', document.body.classList.contains('dark') ? 'dark' : 'light'); }
+    
+    // ========== ИНИЦИАЛИЗАЦИЯ ==========
     function init() {
-        loadFinanceData();
-        loadClickerData();
+        loadFarmData();
+        loadShifts();
+        loadFinance();
         initTheme();
         
-        document.querySelectorAll('.tab-btn').forEach(btn => {
-            btn.addEventListener('click', () => switchSection(btn.dataset.section));
-        });
+        document.querySelectorAll('.tab-btn').forEach(btn => btn.addEventListener('click', () => {
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active-section'));
+            document.getElementById(`${btn.dataset.section}Section`).classList.add('active-section');
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            if (btn.dataset.section === 'farm') updateFarmUI();
+            if (btn.dataset.section === 'calendar') renderCalendar();
+        }));
         
-        document.getElementById('clickCoin').addEventListener('click', clickCoin);
-        document.getElementById('upgradeClickBtn').addEventListener('click', upgradeClick);
-        document.getElementById('upgradeAutoBtn').addEventListener('click', upgradeAuto);
-        document.getElementById('upgradeCritBtn').addEventListener('click', upgradeCrit);
-        document.getElementById('upgradeCritDamageBtn').addEventListener('click', upgradeCritDamage);
-        document.getElementById('upgradeEnergyBtn').addEventListener('click', upgradeEnergy);
-        document.getElementById('upgradeDoubleBtn').addEventListener('click', upgradeDouble);
+        document.getElementById('showShopBtn').onclick = () => switchFarmPanel('shop');
+        document.getElementById('showMarketBtn').onclick = () => switchFarmPanel('market');
+        document.getElementById('showGardenBtn').onclick = () => switchFarmPanel('garden');
+        document.getElementById('viewCartBtn').onclick = () => document.getElementById('cartModal').style.display = 'flex';
+        document.getElementById('closeCartBtn').onclick = () => document.getElementById('cartModal').style.display = 'none';
+        document.getElementById('checkoutBtn').onclick = () => { checkout(); document.getElementById('cartModal').style.display = 'none'; };
+        document.getElementById('prevMonthBtn').onclick = () => changeMonth(-1);
+        document.getElementById('nextMonthBtn').onclick = () => changeMonth(1);
+        document.getElementById('addCategoryBtn').onclick = addCategory;
+        document.getElementById('addGoalBtn').onclick = addGoal;
+        document.getElementById('calPrevMonth').onclick = () => changeCalMonth(-1);
+        document.getElementById('calNextMonth').onclick = () => changeCalMonth(1);
+        document.getElementById('themeToggleBtn').onclick = toggleTheme;
+        document.getElementById('resetAllDataBtn').onclick = resetAll;
+        document.getElementById('getSalaryBtn').onclick = () => { let s = prompt('Зарплата:'); if(s) addIncome(parseFloat(s), 'ЗАРПЛАТА'); };
+        document.getElementById('getAdvanceBtn').onclick = () => { let s = prompt('Аванс:'); if(s) addIncome(parseFloat(s), 'АВАНС'); };
+        document.getElementById('addExpenseBtn').onclick = () => { let cat = document.getElementById('expenseCategorySelect'); let amt = parseFloat(document.getElementById('expenseAmount').value); if (cat.value && amt) addFinanceTransaction(-amt, `Расход: ${financeCategories[cat.value]?.name} -${amt}₽`); };
+        document.getElementById('topUpPiggyBtn').onclick = () => { let amt = parseFloat(document.getElementById('piggyAmount').value); if (amt) { let bal = (financeData[`${currentYear}-${String(currentMonth+1).padStart(2,'0')}`]?.balance || 0); if (bal >= amt) { addFinanceTransaction(-amt, `🐷 Пополнение копилки: ${amt}₽`); let p = parseFloat(localStorage.getItem('piggyBalance'))||0; localStorage.setItem('piggyBalance', p+amt); updateFinanceUI(); } else alert('Недостаточно средств'); } };
+        document.getElementById('clearPiggyBtn').onclick = () => { localStorage.setItem('piggyBalance', '0'); updateFinanceUI(); };
         
-        document.getElementById('getSalaryBtn').addEventListener('click', () => { let s = prompt('Сумма зарплаты:', '50000'); if(s) addIncome(s, 'ЗАРПЛАТА'); });
-        document.getElementById('getAdvanceBtn').addEventListener('click', () => { let s = prompt('Сумма аванса:', '20000'); if(s) addIncome(s, 'АВАНС'); });
-        document.getElementById('prevMonthBtn').addEventListener('click', () => changeMonth(-1));
-        document.getElementById('nextMonthBtn').addEventListener('click', () => changeMonth(1));
-        document.getElementById('addCategoryBtn').addEventListener('click', addCategory);
-        document.getElementById('addGoalBtn').addEventListener('click', addGoal);
-        document.getElementById('topUpPiggyBtn').addEventListener('click', topUpPiggy);
-        document.getElementById('clearPiggyBtn').addEventListener('click', clearPiggy);
-        document.getElementById('addExpenseBtn').addEventListener('click', addExpense);
-        document.getElementById('themeToggleBtn').addEventListener('click', toggleTheme);
-        document.getElementById('resetAllDataBtn').addEventListener('click', resetAllData);
+        updateExpenseSelect();
+        function updateExpenseSelect() { let sel = document.getElementById('expenseCategorySelect'); sel.innerHTML = '<option value="">Выберите</option>'; for (let id in financeCategories) sel.innerHTML += `<option value="${id}">${financeCategories[id].name}</option>`; }
         
-        refreshFinanceUI();
-        updateClickerUI();
-        startAutoClicker();
-        updateClickerHistoryUI();
+        switchFarmPanel('shop');
+        updateFarmUI();
+        renderCalendar();
+        updateFinanceUI();
     }
-    
     init();
 </script>
 </body>
