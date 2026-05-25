@@ -1,15 +1,11 @@
-Вот готовый веб-приложение для перевода VK Coin через Telegram с админ-панелью, где права выдаются через username в коде.
 
-```html
 <!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
     <title>VK Coin Transfer — Telegram App</title>
-    <!-- Telegram Web App SDK -->
     <script src="https://telegram.org/js/telegram-web-app.js?56"></script>
-    <!-- Основные стили для современного веб-приложения -->
     <style>
         * {
             margin: 0;
@@ -143,6 +139,16 @@
             font-size: 0.8rem;
             display: inline-block;
         }
+        .test-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .test-buttons button {
+            flex: 1;
+            background: #4caf50;
+            margin-bottom: 0;
+        }
         @media (prefers-color-scheme: dark) {
             body { background: #0f0f0f; }
         }
@@ -150,7 +156,6 @@
 </head>
 <body>
 <div class="container">
-    <!-- главный блок баланса и перевода -->
     <div class="card" style="text-align: center;">
         <h1>💎 VK Coin</h1>
         <div class="balance-box" id="balanceBox">
@@ -162,7 +167,6 @@
         <div class="label">🔹 Username: @<span id="telegramUsername">—</span></div>
     </div>
 
-    <!-- форма перевода -->
     <div class="card">
         <h2>📤 Перевод монет</h2>
         <div class="label">👥 Получатель (username Telegram)</div>
@@ -170,10 +174,21 @@
         <div class="label">💰 Сумма (VK Coin)</div>
         <input type="number" id="amount" placeholder="Количество монет" min="1" step="1">
         <button id="sendBtn">🚀 Отправить перевод</button>
-        <div class="info-text">Комиссия отсутствует. Перевод между пользователями VK Coin внутри приложения.</div>
+        <div class="info-text">Комиссия отсутствует. Перевод между пользователями VK Coin.</div>
     </div>
 
-    <!-- Админ-панель (показывается только если текущий username в списке админов) -->
+    <!-- Тестовые кнопки для быстрого переключения между пользователями (только для теста в браузере) -->
+    <div class="card">
+        <div class="label">🧪 Тестовые аккаунты (для проверки переводов)</div>
+        <div class="test-buttons">
+            <button id="testUserDcorpious">👑 Dcorpious (админ)</button>
+            <button id="testUserAlice">👩 Alice</button>
+            <button id="testUserBob">👨 Bob</button>
+        </div>
+        <div class="info-text">В Telegram этот блок не виден или работает только в режиме эмуляции.</div>
+    </div>
+
+    <!-- Админ-панель (показывается только если текущий username = Dcorpious) -->
     <div id="adminPanelWrapper" style="display: none;">
         <div class="card admin-panel">
             <h2>🛡️ Админ-панель</h2>
@@ -182,33 +197,28 @@
             <input type="number" id="adminAmount" placeholder="Сумма (VK Coin)">
             <button id="adminAddCoinsBtn">💎 Выдать монеты</button>
             <hr>
-            <div class="label">📋 Управление пользователями (список)</div>
+            <div class="label">📋 Список всех пользователей</div>
             <button id="adminShowUsersBtn">👥 Показать всех пользователей</button>
             <pre id="usersListPreview" style="background: var(--tg-theme-bg-color); padding: 10px; border-radius: 16px; margin-top: 10px; font-size: 12px; overflow-x: auto;"></pre>
             <hr>
-            <div class="label">⚠️ Сброс базы данных (тестовая очистка)</div>
+            <div class="label">⚠️ Сброс базы данных</div>
             <button id="adminResetDbBtn" class="danger-btn">🗑️ СБРОС ВСЕХ ДАННЫХ</button>
             <div class="info-text">Внимание! Сбросит балансы всех пользователей.</div>
         </div>
     </div>
 
-    <div class="info-text" style="margin-top: 20px;">⚡ VK Coin Demo — переводы между пользователями через Telegram.</div>
+    <div class="info-text" style="margin-top: 20px;">⚡ VK Coin Demo — переводы между пользователями через Telegram. Админ: @Dcorpious</div>
 </div>
-<div id="toastMsg" class="toast">Сообщение</div>
+<div id="toastMsg" class="toast"></div>
 
 <script>
-    // --------------------------------------------------------------
-    //  ⚙️ КОНФИГУРАЦИЯ АДМИНОВ: укажите username (без @) кому дать админку
-    // --------------------------------------------------------------
-    const ALLOWED_ADMIN_USERNAMES = ['Dcorpious', 'admin', 'vkcoin'];  // 👈 ЗДЕСЬ УКАЖИТЕ USERNAME АДМИНОВ (ЛАДИНИЦА, БЕЗ @)
-    // Пример: если ваш Telegram юзернейм @myadmin, добавьте 'myadmin' в массив.
-    // --------------------------------------------------------------
+    // ======================== АДМИН НАСТРАИВАЕТСЯ ЗДЕСЬ ========================
+    const ADMIN_USERNAME = 'dcorpious';  // 👈 ВАШ USERNAME (без @) - Dcorpious
+    // ======================================================================
 
-    // --- Глобальное хранилище (имитация базы данных через localStorage) ---
-    // Структура: users = { "username": { balance: number, lastSeen: timestamp } }
+    // --- Хранилище пользователей (localStorage) ---
     let usersStore = {};
 
-    // Загрузка / инициализация хранилища
     function loadStore() {
         const raw = localStorage.getItem('vkcoin_app_users');
         if (raw) {
@@ -216,12 +226,11 @@
                 usersStore = JSON.parse(raw);
             } catch(e) { usersStore = {}; }
         }
-        // Если пусто, создадим тестового пользователя для демо
         if (Object.keys(usersStore).length === 0) {
-            // демо: добавим пару фейковых юзеров для примера (не админы)
-            usersStore['alice'] = { balance: 1500, lastSeen: Date.now() };
-            usersStore['bob'] = { balance: 800, lastSeen: Date.now() };
-            usersStore['durov'] = { balance: 50000, lastSeen: Date.now() };  // admin пример
+            // Начальные тестовые пользователи
+            usersStore['dcorpious'] = { balance: 10000, lastSeen: Date.now() };
+            usersStore['alice'] = { balance: 500, lastSeen: Date.now() };
+            usersStore['bob'] = { balance: 300, lastSeen: Date.now() };
             saveStore();
         }
     }
@@ -230,7 +239,6 @@
         localStorage.setItem('vkcoin_app_users', JSON.stringify(usersStore));
     }
 
-    // Получить баланс пользователя (если нет - создает с нулем)
     function getUserBalance(username) {
         const normalized = username.toLowerCase();
         if (!usersStore[normalized]) {
@@ -240,7 +248,6 @@
         return usersStore[normalized].balance;
     }
 
-    // Установить баланс (приватно)
     function setUserBalance(username, newBalance) {
         const normalized = username.toLowerCase();
         if (!usersStore[normalized]) {
@@ -251,7 +258,6 @@
         saveStore();
     }
 
-    // Добавить монеты пользователю
     function addCoinsToUser(username, amount) {
         if (amount <= 0) return false;
         const cur = getUserBalance(username);
@@ -259,73 +265,75 @@
         return true;
     }
 
-    // Перевести монеты: отправитель (senderUsername) -> получатель (recipientUsername), сумма
     function transferCoins(senderUsername, recipientUsername, amount) {
         const senderNorm = senderUsername.toLowerCase();
         const recipientNorm = recipientUsername.toLowerCase();
         if (senderNorm === recipientNorm) {
-            return { success: false, message: "Нельзя перевести самому себе" };
+            return { success: false, message: "❌ Нельзя перевести самому себе" };
         }
         if (amount <= 0 || !Number.isInteger(amount)) {
-            return { success: false, message: "Сумма должна быть положительным целым числом" };
+            return { success: false, message: "❌ Сумма должна быть положительным целым числом" };
         }
         const senderBal = getUserBalance(senderNorm);
         if (senderBal < amount) {
-            return { success: false, message: `Недостаточно средств. Ваш баланс: ${senderBal} VK Coin` };
+            return { success: false, message: `❌ Недостаточно средств. Ваш баланс: ${senderBal} VK Coin` };
         }
-        // выполняем перевод
         setUserBalance(senderNorm, senderBal - amount);
         addCoinsToUser(recipientNorm, amount);
-        return { success: true, message: `Успешно! Переведено ${amount} монет пользователю @${recipientUsername}` };
+        return { success: true, message: `✅ Переведено ${amount} монет пользователю @${recipientUsername}` };
     }
 
-    // --- Telegram WebApp логика ---
-    let tg = window.Telegram.WebApp;
+    // --- Telegram / Пользовательская сессия ---
+    let tg = window.Telegram?.WebApp;
     let currentUser = {
         id: null,
-        username: null,
+        username: 'dcorpious',   // по умолчанию для теста (вдруг нет Telegram)
         first_name: ''
     };
 
-    // Инициализация Telegram Data
     function initTelegramUser() {
-        tg.expand();  // разворачиваем на весь экран
-        tg.enableClosingConfirmation();
-        const user = tg.initDataUnsafe?.user;
-        if (user) {
-            currentUser.id = user.id;
-            currentUser.username = user.username ? user.username.toLowerCase() : null;
-            currentUser.first_name = user.first_name || '';
-            document.getElementById('telegramUserId').innerText = user.id;
-            document.getElementById('telegramUsername').innerText = currentUser.username ? currentUser.username : 'нет username';
+        if (tg) {
+            tg.expand();
+            tg.enableClosingConfirmation();
+            const user = tg.initDataUnsafe?.user;
+            if (user) {
+                currentUser.id = user.id;
+                currentUser.username = user.username ? user.username.toLowerCase() : null;
+                currentUser.first_name = user.first_name || '';
+                document.getElementById('telegramUserId').innerText = user.id;
+                document.getElementById('telegramUsername').innerText = currentUser.username ? currentUser.username : 'нет username';
+                // Если username нет, используем ID
+                if (!currentUser.username && currentUser.id) {
+                    currentUser.username = `id_${currentUser.id}`;
+                    document.getElementById('telegramUsername').innerText = currentUser.username + ' (авто)';
+                }
+            } else {
+                setDemoUser();
+            }
         } else {
-            // Демо-режим (для теста внутри браузера без Telegram)
-            currentUser.id = 123456789;
-            currentUser.username = 'demouser';
-            currentUser.first_name = 'Demo';
-            document.getElementById('telegramUserId').innerText = '123456789 (демо)';
-            document.getElementById('telegramUsername').innerText = 'demouser (тестовый)';
+            // Режим без Telegram (обычный браузер)
+            setDemoUser();
         }
-        // Гарантируем, что юзер существует в хранилище
+
+        // Убедимся, что пользователь есть в БД
         if (currentUser.username) {
             getUserBalance(currentUser.username);
         } else {
-            // если нет username, используем ID как фоллбэк (но лучше предупредить)
-            if (currentUser.id) {
-                const fallbackName = `id_${currentUser.id}`;
-                currentUser.username = fallbackName;
-                getUserBalance(fallbackName);
-                document.getElementById('telegramUsername').innerText = fallbackName + " (авто)";
-            } else {
-                // абсолютный фоллбэк
-                currentUser.username = 'guest';
-                getUserBalance('guest');
-            }
+            currentUser.username = 'guest';
+            getUserBalance('guest');
         }
         updateBalanceUI();
     }
 
-    // обновление отображения баланса
+    function setDemoUser() {
+        // Для теста в браузере используем Dcorpious как текущего (чтобы видеть админку)
+        currentUser.id = 777777;
+        currentUser.username = 'dcorpious';
+        currentUser.first_name = 'Admin';
+        document.getElementById('telegramUserId').innerText = '777777 (демо)';
+        document.getElementById('telegramUsername').innerText = 'dcorpious (админ демо)';
+    }
+
     function updateBalanceUI() {
         if (currentUser.username) {
             const bal = getUserBalance(currentUser.username);
@@ -335,7 +343,6 @@
         }
     }
 
-    // Показать уведомление (тост)
     function showToast(message, isError = false) {
         const toast = document.getElementById('toastMsg');
         toast.innerText = message;
@@ -344,38 +351,32 @@
         setTimeout(() => {
             toast.style.opacity = '0';
         }, 2800);
-        // также дадим вибрацию если доступно и ошибка
-        if (isError && tg.HapticFeedback) {
-            tg.HapticFeedback.notificationOccurred('error');
-        } else if (tg.HapticFeedback) {
-            tg.HapticFeedback.notificationOccurred('success');
+        if (tg && tg.HapticFeedback) {
+            if (isError) tg.HapticFeedback.notificationOccurred('error');
+            else tg.HapticFeedback.notificationOccurred('success');
         }
     }
 
-    // Проверка админ-прав: текущий username присутствует в ALLOWED_ADMIN_USERNAMES
+    // Проверка админ-прав: username должен совпадать с ADMIN_USERNAME (без учета регистра)
     function isCurrentUserAdmin() {
         if (!currentUser.username) return false;
-        const rawUsername = currentUser.username.toLowerCase().replace(/^@/, '');
-        return ALLOWED_ADMIN_USERNAMES.includes(rawUsername);
+        const raw = currentUser.username.toLowerCase().replace(/^@/, '');
+        return raw === ADMIN_USERNAME.toLowerCase();
     }
 
-    // Показать / скрыть админ панель
     function toggleAdminPanel() {
         const panel = document.getElementById('adminPanelWrapper');
         if (isCurrentUserAdmin()) {
             panel.style.display = 'block';
-            // Дополнительно выведем красивую метку
-            const adminBadge = document.createElement('div');
-            // но можно проще: добавим сообщение, но не спамим
         } else {
             panel.style.display = 'none';
         }
     }
 
-    // Админские функции:
+    // Админские функции
     function adminShowAllUsers() {
         if (!isCurrentUserAdmin()) {
-            showToast("Доступ запрещен: недостаточно прав", true);
+            showToast("⛔ Доступ запрещен: недостаточно прав", true);
             return;
         }
         const usersList = Object.entries(usersStore).map(([uname, data]) => {
@@ -387,75 +388,64 @@
         } else {
             previewEl.innerText = usersList;
         }
-        showToast(`Загружено ${Object.keys(usersStore).length} пользователей`);
+        showToast(`📋 Загружено ${Object.keys(usersStore).length} пользователей`);
     }
 
     function adminAddCoins(targetUsernameRaw, amountRaw) {
         if (!isCurrentUserAdmin()) {
-            showToast("Админ-доступ запрещен", true);
+            showToast("⛔ Админ-доступ запрещен", true);
             return false;
         }
         let target = targetUsernameRaw.trim().toLowerCase().replace(/^@/, '');
         if (target === "") {
-            showToast("Укажите имя пользователя", true);
+            showToast("❌ Укажите имя пользователя", true);
             return false;
         }
         let amount = parseInt(amountRaw, 10);
         if (isNaN(amount) || amount <= 0) {
-            showToast("Сумма должна быть положительным числом", true);
+            showToast("❌ Сумма должна быть положительным числом", true);
             return false;
         }
         addCoinsToUser(target, amount);
         showToast(`✅ Админ выдал ${amount} монет пользователю @${target}`);
-        updateBalanceUI(); // если админ выдал себе — обновить
+        updateBalanceUI();
         return true;
     }
 
     function adminResetDatabase() {
         if (!isCurrentUserAdmin()) {
-            showToast("Нет прав для сброса БД", true);
+            showToast("⛔ Нет прав для сброса БД", true);
             return;
         }
-        if (confirm("⚠️ ВНИМАНИЕ! Это действие сбросит балансы всех пользователей (кроме сохраненных в списке админов?). Продолжить?")) {
-            // Сброс: сохраним только текущего пользователя? Лучше сделать чистый старт, но оставим текущего юзера с балансом 100?
-            const currentUserName = currentUser.username;
+        if (confirm("⚠️ ВНИМАНИЕ! Это действие сбросит балансы всех пользователей. Продолжить?")) {
             const newStore = {};
-            // Оставляем текущего юзера (чтобы он не потерялся) + сохраним админов из списка с минимальным балансом?
-            if (currentUserName) {
-                newStore[currentUserName] = { balance: 0, lastSeen: Date.now() };
-            }
-            // Админы могут получить стартовые 5000 для теста (удобно)
-            for (let adminName of ALLOWED_ADMIN_USERNAMES) {
-                if (!newStore[adminName] && adminName !== currentUserName) {
-                    newStore[adminName] = { balance: 5000, lastSeen: Date.now() };
-                }
-            }
+            // Сохраняем админа с базовым балансом
+            newStore[ADMIN_USERNAME] = { balance: 10000, lastSeen: Date.now() };
             usersStore = newStore;
             saveStore();
             updateBalanceUI();
-            showToast("База данных сброшена. Балансы обнулены.");
-            if (document.getElementById('usersListPreview')) {
-                document.getElementById('usersListPreview').innerText = 'База данных сброшена.';
-            }
+            showToast("🗑️ База данных сброшена.");
+            const previewEl = document.getElementById('usersListPreview');
+            if (previewEl) previewEl.innerText = 'База данных сброшена.';
         }
     }
 
-    // Обработка перевода от текущего пользователя
+    // --- Обработка перевода ---
     function handleSendTransfer() {
         let recipientRaw = document.getElementById('recipientUsername').value.trim();
         let amountRaw = document.getElementById('amount').value.trim();
         if (!recipientRaw) {
-            showToast("Укажите username получателя", true);
+            showToast("❌ Укажите username получателя", true);
             return;
         }
         if (!amountRaw) {
-            showToast("Укажите сумму перевода", true);
+            showToast("❌ Укажите сумму перевода", true);
             return;
         }
         const recipient = recipientRaw.toLowerCase().replace(/^@/, '');
         const amount = parseInt(amountRaw, 10);
         if (isNaN(amount) || amount <= 0) {
-            showToast("Сумма должна быть целым положительным числом", true);
+            showToast("❌ Сумма должна быть целым положительным числом", true);
             return;
         }
         const sender = currentUser.username;
@@ -464,21 +454,33 @@
             return;
         }
         const result = transferCoins(sender, recipient, amount);
+        showToast(result.message, !result.success);
         if (result.success) {
-            showToast(result.message);
             updateBalanceUI();
             document.getElementById('amount').value = '';
             document.getElementById('recipientUsername').value = '';
-            // Обновляем также админскую панель, если открыта
             if (isCurrentUserAdmin()) adminShowAllUsers();
-        } else {
-            showToast(result.message, true);
         }
     }
 
-    // Инициализация UI событий
+    // --- Тестовые кнопки для смены пользователя (только для отладки) ---
+    function switchToUser(newUsername) {
+        currentUser.username = newUsername.toLowerCase();
+        currentUser.id = 999999;
+        document.getElementById('telegramUserId').innerText = `тест ${newUsername}`;
+        document.getElementById('telegramUsername').innerText = newUsername;
+        getUserBalance(currentUser.username); // создаем если нет
+        updateBalanceUI();
+        toggleAdminPanel();
+        showToast(`🔁 Переключились на @${newUsername}${newUsername === ADMIN_USERNAME ? ' (админ)' : ''}`);
+        // очистка превью админа для безопасности
+        const previewEl = document.getElementById('usersListPreview');
+        if (previewEl) previewEl.innerText = '';
+    }
+
     function bindEvents() {
         document.getElementById('sendBtn').addEventListener('click', handleSendTransfer);
+        
         const adminAddBtn = document.getElementById('adminAddCoinsBtn');
         if (adminAddBtn) {
             adminAddBtn.addEventListener('click', () => {
@@ -495,50 +497,54 @@
         if (adminResetBtn) {
             adminResetBtn.addEventListener('click', adminResetDatabase);
         }
+
+        // Тестовые кнопки (только для удобства проверки в браузере)
+        const testDcorpious = document.getElementById('testUserDcorpious');
+        const testAlice = document.getElementById('testUserAlice');
+        const testBob = document.getElementById('testUserBob');
+        if (testDcorpious) testDcorpious.addEventListener('click', () => switchToUser('dcorpious'));
+        if (testAlice) testAlice.addEventListener('click', () => switchToUser('alice'));
+        if (testBob) testBob.addEventListener('click', () => switchToUser('bob'));
     }
 
-    // Периодическое обновление баланса (например, при изменении в админке)
-    function startBalanceWatcher() {
+    function applyTelegramTheme() {
+        if (tg && tg.themeParams) {
+            const tp = tg.themeParams;
+            document.body.style.setProperty('--tg-theme-bg-color', tp.bg_color || '#ffffff');
+            document.body.style.setProperty('--tg-theme-text-color', tp.text_color || '#000000');
+            document.body.style.setProperty('--tg-theme-hint-color', tp.hint_color || '#999999');
+            document.body.style.setProperty('--tg-theme-button-color', tp.button_color || '#3390ec');
+            document.body.style.setProperty('--tg-theme-button-text-color', tp.button_text_color || '#ffffff');
+            document.body.style.setProperty('--tg-theme-secondary-bg-color', tp.secondary_bg_color || '#f0f0f0');
+        }
+    }
+
+    function startAutoRefresh() {
         setInterval(() => {
             if (currentUser.username) {
-                const newBal = getUserBalance(currentUser.username);
-                const currentBalSpan = document.getElementById('userBalance');
-                if (currentBalSpan.innerText.replace(/[^0-9]/g, '') != newBal) {
+                const curBal = getUserBalance(currentUser.username);
+                const span = document.getElementById('userBalance');
+                if (span.innerText.replace(/[^0-9]/g, '') != curBal) {
                     updateBalanceUI();
                 }
             }
         }, 2000);
     }
 
-    // Инициализация темы Telegram
-    function applyTelegramTheme() {
-        const themeParams = tg.themeParams;
-        if (themeParams) {
-            document.body.style.setProperty('--tg-theme-bg-color', themeParams.bg_color || '#ffffff');
-            document.body.style.setProperty('--tg-theme-text-color', themeParams.text_color || '#000000');
-            document.body.style.setProperty('--tg-theme-hint-color', themeParams.hint_color || '#999999');
-            document.body.style.setProperty('--tg-theme-button-color', themeParams.button_color || '#3390ec');
-            document.body.style.setProperty('--tg-theme-button-text-color', themeParams.button_text_color || '#ffffff');
-            document.body.style.setProperty('--tg-theme-secondary-bg-color', themeParams.secondary_bg_color || '#f0f0f0');
-        }
-    }
-
-    // старт приложения
     function init() {
         loadStore();
         applyTelegramTheme();
         initTelegramUser();
         bindEvents();
         toggleAdminPanel();
-        startBalanceWatcher();
-        // дополнительно - проверка админа после подгрузки юзера
+        startAutoRefresh();
+        // Принудительно показываем админку при старте если пользователь Dcorpious
         setTimeout(() => {
             toggleAdminPanel();
-            updateBalanceUI();
+            if (isCurrentUserAdmin()) {
+                showToast("👑 Вы вошли как администратор @Dcorpious", false);
+            }
         }, 100);
-        // кнопка закрытия (нативная)
-        tg.MainButton?.hide();
-        tg.BackButton?.hide();
     }
 
     init();
