@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Моя Ферма</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            padding: 20px;
+            color: white;
+            text-align: center;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            padding: 15px;
+            background: #f5f5f5;
+            border-bottom: 2px solid #ddd;
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #4CAF50;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .farm-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 20px;
+            padding: 20px;
+        }
+
+        .crop-card {
+            background: #f9f9f9;
+            border-radius: 15px;
+            padding: 15px;
+            text-align: center;
+            transition: transform 0.2s, box-shadow 0.2s;
+            border: 2px solid #e0e0e0;
+        }
+
+        .crop-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+
+        .crop-emoji {
+            font-size: 48px;
+            margin-bottom: 10px;
+        }
+
+        .crop-name {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .crop-count {
+            color: #4CAF50;
+            font-weight: bold;
+            margin: 10px 0;
+            font-size: 20px;
+        }
+
+        .harvest-btn {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.2s;
+        }
+
+        .harvest-btn:hover {
+            background: #45a049;
+        }
+
+        .buildings-section {
+            background: #f5f5f5;
+            padding: 20px;
+            border-top: 2px solid #ddd;
+        }
+
+        .section-title {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .building-card {
+            background: white;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .building-info {
+            flex: 1;
+        }
+
+        .building-name {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .building-status {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .building-btn {
+            background: #ff9800;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .building-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .reset-btn {
+            background: #f44336;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            margin: 10px;
+            width: calc(100% - 20px);
+        }
+
+        .reset-btn:hover {
+            background: #d32f2f;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            font-size: 18px;
+            color: #666;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateX(-50%) translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(-50%) translateY(0);
+            }
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translate(-50%, -50%) scale(1); }
+            50% { transform: translate(-50%, -50%) scale(1.1); }
+        }
+
+        .level-up {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            text-align: center;
+            z-index: 1000;
+            animation: bounce 0.5s ease;
+        }
+
+        @media (max-width: 480px) {
+            .farm-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .stats {
+                flex-direction: column;
+                gap: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🌾 Моя Ферма</h1>
+            <p>Выращивай урожай и развивай хозяйство!</p>
+        </div>
+
+        <div class="stats">
+            <div class="stat">
+                <div class="stat-value" id="coins">0</div>
+                <div class="stat-label">💰 Монеты</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value" id="level">1</div>
+                <div class="stat-label">🌟 Уровень</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value" id="experience">0</div>
+                <div class="stat-label">✨ Опыт</div>
+            </div>
+        </div>
+
+        <div class="farm-grid">
+            <div class="crop-card">
+                <div class="crop-emoji">🌾</div>
+                <div class="crop-name">Пшеница</div>
+                <div class="crop-count" id="wheat-count">0</div>
+                <button class="harvest-btn" onclick="harvestCrop('wheat')">Собрать урожай</button>
+            </div>
+
+            <div class="crop-card">
+                <div class="crop-emoji">🌽</div>
+                <div class="crop-name">Кукуруза</div>
+                <div class="crop-count" id="corn-count">0</div>
+                <button class="harvest-btn" onclick="harvestCrop('corn')">Собрать урожай</button>
+            </div>
+
+            <div class="crop-card">
+                <div class="crop-emoji">🥕</div>
+                <div class="crop-name">Морковь</div>
+                <div class="crop-count" id="carrot-count">0</div>
+                <button class="harvest-btn" onclick="harvestCrop('carrot')">Собрать урожай</button>
+            </div>
+        </div>
+
+        <div class="buildings-section">
+            <div class="section-title">🏗️ Постройки</div>
+            
+            <div class="building-card">
+                <div class="building-info">
+                    <div class="building-name">🏚️ Амбар</div>
+                    <div class="building-status">Увеличивает урожайность</div>
+                </div>
+                <button class="building-btn" id="barn-btn" onclick="buyBuilding('barn', 500)">500💰</button>
+            </div>
+
+            <div class="building-card">
+                <div class="building-info">
+                    <div class="building-name">💧 Колодец</div>
+                    <div class="building-status">Ускоряет рост растений</div>
+                </div>
+                <button class="building-btn" id="well-btn" onclick="buyBuilding('well', 800)">800💰</button>
+            </div>
+            
+            <button class="reset-btn" onclick="resetGame()">🔄 Сбросить игру</button>
+        </div>
+    </div>
+
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script>
+        let tg = window.Telegram.WebApp;
+        tg.expand();
+        tg.MainButton.hide();
+        
+        let userData = {
+            coins: 0,
+            level: 1,
+            experience: 0,
+            crops: {
+                wheat: 0,
+                corn: 0,
+                carrot: 0
+            },
+            buildings: {
+                barn: false,
+                well: false
+            }
+        };
+        
+        let pendingRequest = false;
+        
+        // Функция для отправки сообщения боту
+        function sendToBot(data) {
+            if (pendingRequest) {
+                console.log('Ожидание ответа...');
+                return;
+            }
+            
+            pendingRequest = true;
+            console.log('Отправляем боту:', data);
+            tg.sendData(JSON.stringify(data));
+        }
+        
+        // Обработка входящих сообщений от бота
+        tg.onEvent('web_app_data', function(event) {
+            try {
+                console.log('Получено от бота:', event.data);
+                const response = JSON.parse(event.data);
+                
+                if (response.coins !== undefined && !response.action) {
+                    // Это данные пользователя (get_data)
+                    userData = response;
+                    updateUI();
+                    showNotification('Данные загружены!', 'success');
+                    pendingRequest = false;
+                } else if (response.action === 'update' && response.success) {
+                    // Обновление после действия
+                    if (response.coins !== undefined) userData.coins = response.coins;
+                    if (response.level !== undefined) userData.level = response.level;
+                    if (response.experience !== undefined) userData.experience = response.experience;
+                    if (response.crops) userData.crops = response.crops;
+                    if (response.buildings) userData.buildings = response.buildings;
+                    
+                    updateUI();
+                    
+                    if (response.earnings) {
+                        showNotification(`+${response.earnings}💰`, 'success');
+                    }
+                    
+                    if (response.level_up) {
+                        showLevelUp();
+                    }
+                    pendingRequest = false;
+                } else if (response.action === 'error') {
+                    showNotification(response.error, 'error');
+                    pendingRequest = false;
+                }
+            } catch (error) {
+                console.error('Ошибка парсинга:', error);
+                pendingRequest = false;
+            }
+        });
+        
+        // Загрузка данных пользователя
+        function loadUserData() {
+            showLoading(true);
+            sendToBot({ action: 'get_data' });
+            
+            // Таймаут на случай отсутствия ответа
+            setTimeout(() => {
+                showLoading(false);
+                if (userData.coins === 0) {
+                    showNotification('Не удалось загрузить данные. Попробуйте снова.', 'error');
+                }
+                pendingRequest = false;
+            }, 3000);
+        }
+        
+        // Обновление интерфейса
+        function updateUI() {
+            document.getElementById('coins').textContent = userData.coins;
+            document.getElementById('level').textContent = userData.level;
+            document.getElementById('experience').textContent = userData.experience;
+            document.getElementById('wheat-count').textContent = userData.crops.wheat;
+            document.getElementById('corn-count').textContent = userData.crops.corn;
+            document.getElementById('carrot-count').textContent = userData.crops.carrot;
+            
+            // Обновление кнопок построек
+            const barnBtn = document.getElementById('barn-btn');
+            const wellBtn = document.getElementById('well-btn');
+            
+            if (userData.buildings.barn) {
+                barnBtn.textContent = '✅ Построено';
+                barnBtn.disabled = true;
+            } else {
+                barnBtn.textContent = '500💰';
+                barnBtn.disabled = false;
+            }
+            
+            if (userData.buildings.well) {
+                wellBtn.textContent = '✅ Построено';
+                wellBtn.disabled = true;
+            } else {
+                wellBtn.textContent = '800💰';
+                wellBtn.disabled = false;
+            }
+            
+            showLoading(false);
+        }
+        
+        // Сбор урожая
+        function harvestCrop(cropType) {
+            let amount = 1;
+            
+            // Бонус от амбара
+            if (userData.buildings.barn) {
+                amount = 2;
+            }
+            
+            sendToBot({
+                action: 'harvest',
+                crop: cropType,
+                amount: amount
+            });
+        }
+        
+        // Покупка постройки
+        function buyBuilding(building, cost) {
+            if (userData.buildings[building]) {
+                showNotification('Постройка уже есть!', 'info');
+                return;
+            }
+            
+            if (userData.coins >= cost) {
+                sendToBot({
+                    action: 'buy_building',
+                    building: building,
+                    cost: cost
+                });
+            } else {
+                showNotification(`Недостаточно монет! Нужно ${cost}💰`, 'error');
+            }
+        }
+        
+        // Сброс игры
+        function resetGame() {
+            if (confirm('Вы уверены, что хотите сбросить прогресс? Все данные будут потеряны!')) {
+                sendToBot({ action: 'reset' });
+            }
+        }
+        
+        // Показ уведомлений
+        function showNotification(message, type) {
+            const notification = document.createElement('div');
+            notification.textContent = message;
+            notification.style.cssText = `
+                position: fixed;
+                bottom: 20px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: ${type === 'success' ? '#4CAF50' : type === 'error' ? '#f44336' : '#2196F3'};
+                color: white;
+                padding: 12px 24px;
+                border-radius: 8px;
+                z-index: 1000;
+                animation: slideUp 0.3s ease;
+            `;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
+        
+        function showLoading(show) {
+            const loadingDiv = document.getElementById('loading');
+            if (show) {
+                if (!document.getElementById('loading')) {
+                    const div = document.createElement('div');
+                    div.id = 'loading';
+                    div.className = 'loading';
+                    div.textContent = 'Загрузка данных...';
+                    document.body.insertBefore(div, document.body.firstChild);
+                }
+            } else {
+                const loading = document.getElementById('loading');
+                if (loading) loading.remove();
+            }
+        }
+        
+        // Показ анимации повышения уровня
+        function showLevelUp() {
+            const levelUpDiv = document.createElement('div');
+            levelUpDiv.className = 'level-up';
+            levelUpDiv.innerHTML = `
+                <h2>🎉 УРОВЕНЬ ПОВЫШЕН! 🎉</h2>
+                <p>Вы достигли ${userData.level} уровня!</p>
+                <button onclick="this.parentElement.remove()" style="margin-top: 10px; padding: 5px 15px;">Отлично!</button>
+            `;
+            
+            document.body.appendChild(levelUpDiv);
+            
+            setTimeout(() => {
+                if (levelUpDiv.parentElement) {
+                    levelUpDiv.remove();
+                }
+            }, 3000);
+        }
+        
+        // Инициализация при загрузке
+        tg.ready();
+        loadUserData();
+    </script>
+</body>
+</html>
