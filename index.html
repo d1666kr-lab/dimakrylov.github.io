@@ -107,12 +107,13 @@
         .icon-btn { background: none; border: none; font-size: 18px; cursor: pointer; padding: 0 8px; }
         .goal-progress { background: var(--progress-bg); border-radius: 20px; height: 8px; width: 100%; margin: 8px 0; }
         .goal-fill { background: var(--btn-success); height: 8px; border-radius: 20px; width: 0%; }
+        .goal-recommendation { background: var(--btn-info); color: white; border-radius: 12px; padding: 8px; margin-top: 8px; font-size: 12px; text-align: center; }
         .history-log { max-height: 200px; overflow-y: auto; }
         .history-item { background: var(--bg-page); border-radius: 12px; padding: 8px; margin-bottom: 6px; font-size: 12px; }
 
         /* Ферма */
         .farm-card { background: var(--farm-bg); color: white; }
-        .farm-stats { display: flex; justify-content: space-between; margin-bottom: 15px; font-size: 14px; background: rgba(0,0,0,0.3); border-radius: 16px; padding: 10; flex-wrap: wrap; gap: 8px; }
+        .farm-stats { display: flex; justify-content: space-between; margin-bottom: 15px; font-size: 14px; background: rgba(0,0,0,0.3); border-radius: 16px; padding: 10px; flex-wrap: wrap; gap: 8px; }
         .farm-stats span { background: rgba(0,0,0,0.3); padding: 4px 10px; border-radius: 20px; }
         .shop-grid, .market-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 10px; }
         .shop-item, .market-item { background: rgba(255,255,255,0.15); border-radius: 16px; padding: 10px; text-align: center; cursor: pointer; }
@@ -171,7 +172,7 @@
         <div class="card"><div style="display:flex;justify-content:space-between;"><h3>🐷 Копилка</h3><span id="piggyBalance">0 ₽</span></div><div class="inline-input"><input type="number" id="piggyAmount" value="1000"><button class="small-btn" id="topUpPiggyBtn">➕ Пополнить</button></div><button class="btn-danger btn" id="clearPiggyBtn">Очистить</button></div>
         <div class="section-title"><span>📂 Категории</span><button class="btn-outline" id="addCategoryBtn">+</button></div>
         <div id="categoriesList"></div>
-        <div class="section-title"><span>🎯 Цели</span><button class="btn-outline" id="addGoalBtn">+</button></div>
+        <div class="section-title"><span>🎯 Мои цели</span><button class="btn-outline" id="addGoalBtn">+</button></div>
         <div id="goalsList"></div>
         <div class="card"><h3>📜 История</h3><div id="historyLog" class="history-log"></div></div>
     </div>
@@ -247,10 +248,9 @@
     // ========== ФЕРМА ==========
     let farmCoins = 500;
     let farmDay = 1;
-    let inventory = {}; // { seedId: quantity }
+    let inventory = {};
     let garden = [null, null, null, null, null, null];
     let cart = [];
-    // Динамические цены на рынке
     let marketPrices = {};
     
     const seeds = {
@@ -262,7 +262,6 @@
     };
     
     function generateRandomPrice(baseValue) {
-        // цена от 70% до 130% от базовой
         const variation = 0.7 + Math.random() * 0.6;
         return Math.floor(baseValue * variation);
     }
@@ -275,21 +274,10 @@
     
     function nextDay() {
         farmDay++;
-        // Обновляем цены на рынке
         updateMarketPrices();
-        // Обновляем рост растений
-        for (let i = 0; i < garden.length; i++) {
-            if (garden[i] && garden[i].plantedAt) {
-                // Ничего не делаем, просто при отрисовке проверим
-            }
-        }
         saveFarmData();
         updateFarmUI();
-        // Показываем уведомление об изменении цен
-        const marketPricesDiv = document.getElementById('marketGrid');
-        if (marketPricesDiv && document.getElementById('marketPanel').style.display !== 'none') {
-            renderMarket();
-        }
+        if (document.getElementById('marketPanel').style.display !== 'none') renderMarket();
     }
     
     function saveFarmData() {
@@ -330,20 +318,18 @@
         if (!container) return;
         container.innerHTML = '';
         for (let [id, seed] of Object.entries(seeds)) {
-            container.innerHTML += `<div class="shop-item" data-seed="${id}">
+            container.innerHTML += `<div class="shop-item">
                 <div style="font-size:24px;">${seed.emoji}</div>
                 <div>${seed.name}</div>
                 <div style="font-size:11px;">💰 ${seed.price} монет</div>
                 <div style="font-size:10px;">🌱 ${seed.growTime/1000} сек</div>
-                <button class="small-btn add-to-cart" data-id="${id}" data-name="${seed.name}" data-price="${seed.price}" style="margin-top:5px; padding:4px 8px;">В корзину</button>
+                <button class="small-btn add-to-cart" data-id="${id}" data-name="${seed.name}" data-price="${seed.price}" style="margin-top:5px;">В корзину</button>
             </div>`;
         }
         document.querySelectorAll('.add-to-cart').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 e.stopPropagation();
-                const id = btn.dataset.id;
-                const seed = seeds[id];
-                cart.push({ id, name: seed.name, price: seed.price });
+                cart.push({ id: btn.dataset.id, name: btn.dataset.name, price: parseInt(btn.dataset.price) });
                 updateCartUI();
             });
         });
@@ -375,38 +361,24 @@
             updateCartUI();
             updateFarmUI();
             alert('Покупка совершена! Семена в инвентаре.');
-        } else {
-            alert(`Не хватает монет! Нужно ${total}, у вас ${Math.floor(farmCoins)}`);
-        }
+        } else alert(`Не хватает монет! Нужно ${total}, у вас ${Math.floor(farmCoins)}`);
     }
     
     function renderInventory() {
         const container = document.getElementById('inventoryList');
         const displayContainer = document.getElementById('inventoryDisplay');
-        if (container) {
-            if (Object.keys(inventory).length === 0) { container.innerHTML = '📦 Инвентарь пуст'; }
-            else {
-                container.innerHTML = Object.entries(inventory).map(([id, qty]) => `<span style="background:rgba(0,0,0,0.3); border-radius:20px; padding:4px 10px; margin:3px; display:inline-block;">${seeds[id]?.emoji || '🌱'} ${seeds[id]?.name || id}: ${qty} шт.</span>`).join('');
-            }
-        }
+        const invHtml = Object.keys(inventory).length === 0 ? '📦 Инвентарь пуст' : Object.entries(inventory).map(([id, qty]) => `<span style="background:rgba(0,0,0,0.3); border-radius:20px; padding:4px 10px; margin:3px; display:inline-block;">${seeds[id]?.emoji} ${seeds[id]?.name}: ${qty} шт.</span>`).join('');
+        if (container) container.innerHTML = invHtml;
         if (displayContainer) {
-            if (Object.keys(inventory).length === 0) { displayContainer.innerHTML = '📦 У вас пока нет урожая для продажи'; }
-            else {
-                displayContainer.innerHTML = '<strong>Ваш урожай на продажу:</strong><br>' + Object.entries(inventory).map(([id, qty]) => `${seeds[id]?.emoji} ${seeds[id]?.name}: ${qty} шт.`).join('<br>');
-            }
+            if (Object.keys(inventory).length === 0) displayContainer.innerHTML = '📦 У вас пока нет урожая для продажи';
+            else displayContainer.innerHTML = '<strong>Ваш урожай на продажу:</strong><br>' + Object.entries(inventory).map(([id, qty]) => `${seeds[id]?.emoji} ${seeds[id]?.name}: ${qty} шт.`).join('<br>');
         }
     }
     
     function plantSeed(plotIndex) {
         const seedId = prompt('Введите ID семени (wheat, carrot, tomato, potato, corn):\nДоступны: ' + Object.keys(inventory).filter(id => inventory[id] > 0).join(', '));
-        if (!seedId || !seeds[seedId] || !inventory[seedId] || inventory[seedId] <= 0) {
-            alert('Нет таких семян!');
-            return;
-        }
-        if (garden[plotIndex] && garden[plotIndex].plantedAt && Date.now() - garden[plotIndex].plantedAt < garden[plotIndex].growTime) {
-            alert('Здесь уже что-то растёт!');
-            return;
-        }
+        if (!seedId || !seeds[seedId] || !inventory[seedId] || inventory[seedId] <= 0) { alert('Нет таких семян!'); return; }
+        if (garden[plotIndex] && garden[plotIndex].plantedAt && Date.now() - garden[plotIndex].plantedAt < garden[plotIndex].growTime) { alert('Здесь уже что-то растёт!'); return; }
         inventory[seedId]--;
         garden[plotIndex] = {
             seedId: seedId,
@@ -423,16 +395,14 @@
     function harvestPlot(plotIndex) {
         const plot = garden[plotIndex];
         if (!plot) return;
-        const elapsed = Date.now() - plot.plantedAt;
-        if (elapsed >= plot.growTime) {
-            // Урожай идёт в инвентарь, а не сразу в монеты!
+        if (Date.now() - plot.plantedAt >= plot.growTime) {
             inventory[plot.seedId] = (inventory[plot.seedId] || 0) + 1;
             garden[plotIndex] = null;
             saveFarmData();
             updateFarmUI();
             alert(`🌾 Собран ${plot.plantName}! Урожай добавлен в инвентарь. Продайте его на рынке.`);
         } else {
-            const remain = Math.ceil((plot.growTime - elapsed) / 1000);
+            const remain = Math.ceil((plot.growTime - (Date.now() - plot.plantedAt)) / 1000);
             alert(`Ещё не выросло! Осталось ${remain} сек`);
         }
     }
@@ -443,18 +413,10 @@
         container.innerHTML = '';
         for (let i = 0; i < garden.length; i++) {
             const plot = garden[i];
-            let content = '';
-            let status = '';
+            let content = '', status = '';
             if (!plot) { content = '🌱<br>Пусто'; status = 'empty'; }
-            else {
-                const elapsed = Date.now() - plot.plantedAt;
-                if (elapsed >= plot.growTime) { content = `${plot.emoji}<br>✅ ГОТОВО`; status = 'ready'; }
-                else { 
-                    const percent = Math.floor((elapsed / plot.growTime) * 100);
-                    content = `${plot.emoji}<br>${percent}%`;
-                    status = 'growing';
-                }
-            }
+            else if (Date.now() - plot.plantedAt >= plot.growTime) { content = `${plot.emoji}<br>✅ ГОТОВО`; status = 'ready'; }
+            else { const percent = Math.floor((Date.now() - plot.plantedAt) / plot.growTime * 100); content = `${plot.emoji}<br>${percent}%`; status = 'growing'; }
             container.innerHTML += `<div class="plot ${status == 'ready' ? 'harvest-ready' : (plot ? 'planted' : '')}" data-plot="${i}">${content}</div>`;
         }
         document.querySelectorAll('.plot').forEach(el => {
@@ -471,128 +433,96 @@
         if (!container) return;
         container.innerHTML = '';
         for (let [id, seed] of Object.entries(seeds)) {
-            const currentPrice = marketPrices[id] || seed.baseValue;
-            const priceChange = ((currentPrice - seed.baseValue) / seed.baseValue * 100).toFixed(0);
-            const priceClass = currentPrice >= seed.baseValue ? 'price-up' : 'price-down';
-            const arrow = currentPrice >= seed.baseValue ? '↑' : '↓';
-            container.innerHTML += `<div class="market-item" data-seed="${id}">
+            const price = marketPrices[id] || seed.baseValue;
+            const change = ((price - seed.baseValue) / seed.baseValue * 100).toFixed(0);
+            const arrow = price >= seed.baseValue ? '↑' : '↓';
+            const priceClass = price >= seed.baseValue ? 'price-up' : 'price-down';
+            container.innerHTML += `<div class="market-item">
                 <div style="font-size:24px;">${seed.emoji}</div>
                 <div>${seed.name}</div>
-                <div class="${priceClass}">💰 ${currentPrice} монет ${arrow} ${Math.abs(priceChange)}%</div>
-                <div style="font-size:11px;">Базовая цена: ${seed.baseValue}</div>
+                <div class="${priceClass}">💰 ${price} монет ${arrow} ${Math.abs(change)}%</div>
+                <div style="font-size:11px;">База: ${seed.baseValue}</div>
                 <div class="inline-input" style="margin-top:5px;">
-                    <input type="number" id="sell-qty-${id}" placeholder="Кол-во" value="1" style="padding:6px;">
-                    <button class="small-btn sell-item" data-id="${id}" data-price="${currentPrice}" style="padding:6px 12px;">Продать</button>
+                    <input type="number" id="sell-qty-${id}" value="1" style="padding:6px;">
+                    <button class="small-btn sell-item" data-id="${id}" data-price="${price}">Продать</button>
                 </div>
             </div>`;
         }
         document.querySelectorAll('.sell-item').forEach(btn => {
             btn.addEventListener('click', () => {
-                const seedId = btn.dataset.id;
-                const price = parseInt(btn.dataset.price);
-                const qty = parseInt(document.getElementById(`sell-qty-${seedId}`).value);
+                const id = btn.dataset.id, price = parseInt(btn.dataset.price);
+                const qty = parseInt(document.getElementById(`sell-qty-${id}`).value);
                 if (isNaN(qty) || qty <= 0) return;
-                if (inventory[seedId] && inventory[seedId] >= qty) {
-                    inventory[seedId] -= qty;
-                    const income = qty * price;
-                    farmCoins += income;
+                if (inventory[id] && inventory[id] >= qty) {
+                    inventory[id] -= qty;
+                    farmCoins += qty * price;
                     saveFarmData();
                     updateFarmUI();
-                    alert(`✅ Продано ${qty} шт. ${seeds[seedId].name} за ${income} монет!`);
-                } else {
-                    alert(`У вас только ${inventory[seedId] || 0} шт. ${seeds[seedId].name}`);
-                }
+                    alert(`✅ Продано ${qty} шт. ${seeds[id].name} за ${qty*price} монет!`);
+                } else alert(`У вас только ${inventory[id] || 0} шт.`);
             });
         });
         renderInventory();
     }
     
-    function startGardenCheck() {
-        setInterval(() => { renderGarden(); saveFarmData(); }, 1000);
-    }
-    
+    function startGardenCheck() { setInterval(() => { renderGarden(); saveFarmData(); }, 1000); }
     function switchFarmPanel(panel) {
         document.getElementById('shopPanel').style.display = panel === 'shop' ? 'block' : 'none';
         document.getElementById('marketPanel').style.display = panel === 'market' ? 'block' : 'none';
         document.getElementById('gardenPanel').style.display = panel === 'garden' ? 'block' : 'none';
-        if (panel === 'shop') renderShop();
         if (panel === 'market') renderMarket();
         if (panel === 'garden') { renderGarden(); renderInventory(); }
     }
     
-    // ========== КАЛЕНДАРЬ СМЕН (фикс — смены по месяцам отдельно) ==========
-    let calCurrentYear = 2026;
-    let calCurrentMonth = 0;
-    let shifts = {}; // key: "YYYY-MM" -> { "DD": true }
-    
-    function loadShifts() {
-        const saved = localStorage.getItem('shifts');
-        if (saved) shifts = JSON.parse(saved);
-        else shifts = {};
-    }
+    // ========== КАЛЕНДАРЬ СМЕН ==========
+    let calCurrentYear = 2026, calCurrentMonth = 0;
+    let shifts = {};
+    function loadShifts() { const s = localStorage.getItem('shifts'); if (s) shifts = JSON.parse(s); else shifts = {}; }
     function saveShifts() { localStorage.setItem('shifts', JSON.stringify(shifts)); }
-    
-    function toggleShift(year, month, day) {
-        const monthKey = `${year}-${String(month+1).padStart(2,'0')}`;
-        const dayStr = String(day).padStart(2,'0');
-        if (!shifts[monthKey]) shifts[monthKey] = {};
-        if (shifts[monthKey][dayStr]) delete shifts[monthKey][dayStr];
-        else shifts[monthKey][dayStr] = true;
+    function toggleShift(y, m, d) {
+        const key = `${y}-${String(m+1).padStart(2,'0')}`;
+        const dayStr = String(d).padStart(2,'0');
+        if (!shifts[key]) shifts[key] = {};
+        if (shifts[key][dayStr]) delete shifts[key][dayStr];
+        else shifts[key][dayStr] = true;
         saveShifts();
         renderCalendar();
     }
-    
-    function getShiftCountForMonth(year, month) {
-        const monthKey = `${year}-${String(month+1).padStart(2,'0')}`;
-        if (!shifts[monthKey]) return 0;
-        return Object.keys(shifts[monthKey]).length;
-    }
-    
     function renderCalendar() {
-        const monthNames = ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
-        document.getElementById('calMonthYear').innerText = `${monthNames[calCurrentMonth]} ${calCurrentYear}`;
+        const months = ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
+        document.getElementById('calMonthYear').innerText = `${months[calCurrentMonth]} ${calCurrentYear}`;
         const firstDay = new Date(calCurrentYear, calCurrentMonth, 1);
-        let startWeekday = firstDay.getDay();
-        startWeekday = startWeekday === 0 ? 7 : startWeekday;
+        let startWeekday = firstDay.getDay() || 7;
         const daysInMonth = new Date(calCurrentYear, calCurrentMonth + 1, 0).getDate();
         const today = new Date();
         const todayStr = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
         const monthKey = `${calCurrentYear}-${String(calCurrentMonth+1).padStart(2,'0')}`;
-        const currentMonthShifts = shifts[monthKey] || {};
-        
+        const monthShifts = shifts[monthKey] || {};
         let html = '';
         for (let i = 1; i < startWeekday; i++) html += '<div class="calendar-day"></div>';
         for (let d = 1; d <= daysInMonth; d++) {
             const dayStr = String(d).padStart(2,'0');
-            const isShift = currentMonthShifts[dayStr] === true;
+            const isShift = monthShifts[dayStr] === true;
             const isToday = `${calCurrentYear}-${String(calCurrentMonth+1).padStart(2,'0')}-${dayStr}` === todayStr;
             html += `<div class="calendar-day ${isShift ? 'shift' : ''} ${isToday ? 'today' : ''}" data-day="${d}">${d}</div>`;
         }
         document.getElementById('calendarDays').innerHTML = html;
         document.querySelectorAll('.calendar-day[data-day]').forEach(el => {
-            const day = parseInt(el.dataset.day);
-            el.addEventListener('click', () => toggleShift(calCurrentYear, calCurrentMonth, day));
+            el.addEventListener('click', () => toggleShift(calCurrentYear, calCurrentMonth, parseInt(el.dataset.day)));
         });
-        const shiftCount = getShiftCountForMonth(calCurrentYear, calCurrentMonth);
-        document.getElementById('shiftSummary').innerHTML = `📊 В ${monthNames[calCurrentMonth]} ${calCurrentYear}: ${shiftCount} смен(ы) | График 2/2 (рабочий день отмечается)`;
+        const shiftCount = Object.keys(monthShifts).length;
+        document.getElementById('shiftSummary').innerHTML = `📊 В ${months[calCurrentMonth]} ${calCurrentYear}: ${shiftCount} смен(ы) | Нажмите на день, чтобы отметить смену (график 2/2)`;
     }
-    
     function changeCalMonth(delta) {
-        let nm = calCurrentMonth + delta;
-        let ny = calCurrentYear;
+        let nm = calCurrentMonth + delta, ny = calCurrentYear;
         if (nm < 0) { nm = 11; ny--; }
         else if (nm > 11) { nm = 0; ny++; }
-        calCurrentYear = ny;
-        calCurrentMonth = nm;
+        calCurrentYear = ny; calCurrentMonth = nm;
         renderCalendar();
     }
     
-    // ========== ФИНАНСЫ ==========
-    let financeData = {};
-    let financeTransactions = [];
-    let financeCategories = { 1: { name: 'Транспорт', limit: 5000 }, 2: { name: 'Продукты', limit: 10000 } };
-    let financeGoals = {};
-    let nextCatId = 3;
+    // ========== ФИНАНСЫ С РАСЧЁТОМ ЦЕЛЕЙ ==========
+    let financeData = {}, financeTransactions = [], financeCategories = {1:{name:'Транспорт',limit:5000},2:{name:'Продукты',limit:10000}}, financeGoals = {}, nextCatId = 3;
     let currentYear = 2026, currentMonth = 0;
     
     function loadFinance() {
@@ -602,10 +532,15 @@
         updateFinanceUI();
     }
     function saveFinance() { localStorage.setItem('financeData', JSON.stringify({ financeData, transactions: financeTransactions, categories: financeCategories, goals: financeGoals })); }
+    
+    function getMonthsDifference(targetYear, targetMonth) {
+        let months = (targetYear - currentYear) * 12 + (targetMonth - 1 - currentMonth);
+        return months > 0 ? months : 1;
+    }
+    
     function updateFinanceUI() {
         const monthKey = `${currentYear}-${String(currentMonth+1).padStart(2,'0')}`;
-        const balance = (financeData[monthKey]?.balance || 0);
-        document.getElementById('mainBalance').innerHTML = balance.toLocaleString() + ' ₽';
+        document.getElementById('mainBalance').innerHTML = (financeData[monthKey]?.balance || 0).toLocaleString() + ' ₽';
         const months = ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
         document.getElementById('currentMonthLabel').innerText = `${months[currentMonth]} ${currentYear}`;
         document.getElementById('piggyBalance').innerHTML = (parseFloat(localStorage.getItem('piggyBalance')) || 0).toLocaleString() + ' ₽';
@@ -613,6 +548,68 @@
         renderGoalsFinance();
         renderHistoryFinance();
     }
+    
+    function renderCategoriesFinance() {
+        document.getElementById('categoriesList').innerHTML = Object.entries(financeCategories).map(([id,c]) => `<div class="cat-item"><span><strong>${c.name}</strong> — лимит ${c.limit}₽</span><span><button class="icon-btn" onclick="editCat(${id})">✏️</button><button class="icon-btn" onclick="deleteCat(${id})">❌</button></span></div>`).join('');
+    }
+    
+    function renderGoalsFinance() {
+        const container = document.getElementById('goalsList');
+        if (Object.keys(financeGoals).length === 0) { container.innerHTML = '<div class="card">Нет целей. Добавьте первую.</div>'; return; }
+        let html = '';
+        for (let [id, g] of Object.entries(financeGoals)) {
+            const percent = (g.current / g.target * 100).toFixed(1);
+            const remaining = g.target - g.current;
+            const monthsLeft = getMonthsDifference(g.year, g.month);
+            const neededPerMonth = Math.ceil(remaining / monthsLeft);
+            let recommendationText = '';
+            if (remaining <= 0) recommendationText = '✅ Цель достигнута! Поздравляем!';
+            else if (monthsLeft <= 0) recommendationText = '⚠️ Срок уже прошёл или заканчивается! Срочно откладывайте!';
+            else recommendationText = `💡 Рекомендация: откладывайте ≈ ${neededPerMonth.toLocaleString()} ₽ в месяц (осталось ${monthsLeft} мес., нужно ${remaining.toLocaleString()} ₽)`;
+            
+            html += `<div class="goal-item">
+                <div style="flex:1;">
+                    <div><strong>${g.name}</strong> — ${g.current.toLocaleString()} ₽ / ${g.target.toLocaleString()} ₽</div>
+                    <div class="goal-progress"><div class="goal-fill" style="width:${Math.min(100, percent)}%"></div></div>
+                    <div style="font-size:12px;">🎯 Срок: ${g.month}.${g.year}</div>
+                    <div class="goal-recommendation">${recommendationText}</div>
+                    <div class="inline-input" style="margin-top:8px;">
+                        <input type="number" id="goalSaveInput-${id}" placeholder="Сумма" value="1000">
+                        <button class="small-btn save-goal-btn" data-id="${id}">💰 Отложить</button>
+                    </div>
+                </div>
+                <div>
+                    <button class="icon-btn edit-goal-btn" data-id="${id}">✏️</button>
+                    <button class="icon-btn del-goal-btn" data-id="${id}">❌</button>
+                </div>
+            </div>`;
+        }
+        container.innerHTML = html;
+        
+        document.querySelectorAll('.save-goal-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const id = btn.dataset.id;
+                const val = parseFloat(document.getElementById(`goalSaveInput-${id}`).value);
+                if (isNaN(val) || val <= 0) return;
+                const monthKey = `${currentYear}-${String(currentMonth+1).padStart(2,'0')}`;
+                const balance = financeData[monthKey]?.balance || 0;
+                if (balance < val) { alert('Недостаточно средств на балансе!'); return; }
+                financeData[monthKey].balance -= val;
+                financeGoals[id].current += val;
+                addFinanceTransaction(-val, `🎯 Цель "${financeGoals[id].name}" +${val.toLocaleString()} ₽`);
+                saveFinance();
+                updateFinanceUI();
+            });
+        });
+        
+        document.querySelectorAll('.edit-goal-btn').forEach(btn => {
+            btn.addEventListener('click', () => editGoal(btn.dataset.id));
+        });
+        document.querySelectorAll('.del-goal-btn').forEach(btn => {
+            btn.addEventListener('click', () => deleteGoal(btn.dataset.id));
+        });
+    }
+    
     function addFinanceTransaction(amount, desc) {
         const monthKey = `${currentYear}-${String(currentMonth+1).padStart(2,'0')}`;
         if (!financeData[monthKey]) financeData[monthKey] = { balance: 0 };
@@ -621,25 +618,41 @@
         saveFinance();
         updateFinanceUI();
     }
-    function addIncome(amt, type) { let reserve = Object.values(financeCategories).reduce((s,c)=>s+c.limit,0); let avail = Math.max(0, amt - reserve); addFinanceTransaction(avail, `${type}: ${amt}₽ (резерв ${reserve}₽)`); }
-    function renderCategoriesFinance() { document.getElementById('categoriesList').innerHTML = Object.entries(financeCategories).map(([id,c]) => `<div class="cat-item"><span><strong>${c.name}</strong> — лимит ${c.limit}₽</span><span><button class="icon-btn" onclick="editCat(${id})">✏️</button><button class="icon-btn" onclick="deleteCat(${id})">❌</button></span></div>`).join(''); }
-    function renderGoalsFinance() { document.getElementById('goalsList').innerHTML = Object.entries(financeGoals).map(([id,g]) => `<div class="goal-item"><div><strong>${g.name}</strong> — ${g.current}₽ / ${g.target}₽<div class="goal-progress"><div class="goal-fill" style="width:${(g.current/g.target*100)}%"></div></div><div>🎯 До ${g.month}.${g.year}</div></div><div><button class="icon-btn" onclick="editGoal(${id})">✏️</button><button class="icon-btn" onclick="deleteGoal(${id})">❌</button></div></div>`).join(''); }
-    function renderHistoryFinance() { document.getElementById('historyLog').innerHTML = financeTransactions.filter(t => t.monthKey === `${currentYear}-${String(currentMonth+1).padStart(2,'0')}`).slice(0,15).map(t => `<div class="history-item">[${new Date(t.timestamp).toLocaleTimeString()}] ${t.text}</div>`).join(''); }
-    window.editCat = (id) => { let n = prompt('Название:', financeCategories[id].name); if(n) financeCategories[id].name=n; let l = prompt('Лимит:', financeCategories[id].limit); if(l) financeCategories[id].limit=parseFloat(l); saveFinance(); updateFinanceUI(); };
+    
+    function renderHistoryFinance() {
+        const monthKey = `${currentYear}-${String(currentMonth+1).padStart(2,'0')}`;
+        const history = financeTransactions.filter(t => t.monthKey === monthKey).slice(0,15);
+        document.getElementById('historyLog').innerHTML = history.length ? history.map(t => `<div class="history-item">[${new Date(t.timestamp).toLocaleTimeString()}] ${t.text}</div>`).join('') : '<div>Нет операций</div>';
+    }
+    
+    function addIncome(amt, type) {
+        let reserve = Object.values(financeCategories).reduce((s,c)=>s+c.limit,0);
+        let avail = Math.max(0, amt - reserve);
+        addFinanceTransaction(avail, `${type}: ${amt}₽ (резерв ${reserve}₽)`);
+    }
+    
+    window.editCat = (id) => {
+        let n = prompt('Название:', financeCategories[id].name);
+        if (n) financeCategories[id].name = n;
+        let l = prompt('Лимит:', financeCategories[id].limit);
+        if (l) financeCategories[id].limit = parseFloat(l);
+        saveFinance(); updateFinanceUI();
+    };
     window.deleteCat = (id) => { delete financeCategories[id]; saveFinance(); updateFinanceUI(); };
-    window.editGoal = (id) => { let g = financeGoals[id]; let n = prompt('Название:', g.name); if(n) g.name=n; let t = prompt('Цель:', g.target); if(t) g.target=parseFloat(t); let m = prompt('Месяц:', g.month); if(m) g.month=parseInt(m); let y = prompt('Год:', g.year); if(y) g.year=parseInt(y); saveFinance(); updateFinanceUI(); };
-    window.deleteGoal = (id) => { delete financeGoals[id]; saveFinance(); updateFinanceUI(); };
     function addCategory() { let n = prompt('Название'); if(n) { let l = prompt('Лимит'); financeCategories[nextCatId++] = { name: n, limit: parseFloat(l) || 5000 }; saveFinance(); updateFinanceUI(); } }
-    function addGoal() { let n = prompt('Название'); if(n) { let t = parseFloat(prompt('Сумма')); financeGoals[nextCatId++] = { name: n, target: t, current: 0, month: 12, year: 2026 }; saveFinance(); updateFinanceUI(); } }
-    function changeMonth(delta) { let nm = currentMonth + delta; if (nm < 0) { nm = 11; currentYear--; } else if (nm > 11) { nm = 0; currentYear++; } currentMonth = nm; updateFinanceUI(); }
+    function addGoal() { let n = prompt('Название цели'); if(n) { let t = parseFloat(prompt('Сумма')); let m = parseInt(prompt('Месяц (1-12):', '12')); let y = parseInt(prompt('Год:', currentYear+1)); financeGoals[Date.now()] = { name: n, target: t, current: 0, month: m, year: y }; saveFinance(); updateFinanceUI(); } }
+    function editGoal(id) { let g = financeGoals[id]; if(!g) return; let n = prompt('Название:', g.name); if(n) g.name=n; let t = parseFloat(prompt('Сумма:', g.target)); if(!isNaN(t)) g.target=t; let m = parseInt(prompt('Месяц:', g.month)); if(!isNaN(m)) g.month=m; let y = parseInt(prompt('Год:', g.year)); if(!isNaN(y)) g.year=y; saveFinance(); updateFinanceUI(); }
+    function deleteGoal(id) { delete financeGoals[id]; saveFinance(); updateFinanceUI(); }
+    
+    function changeMonth(delta) {
+        let nm = currentMonth + delta, ny = currentYear;
+        if (nm < 0) { nm = 11; ny--; } else if (nm > 11) { nm = 0; ny++; }
+        currentYear = ny; currentMonth = nm;
+        updateFinanceUI();
+    }
     
     // ========== СБРОС ==========
-    function resetAll() {
-        if (confirm('Сбросить ВСЕ данные?')) {
-            localStorage.clear();
-            location.reload();
-        }
-    }
+    function resetAll() { if(confirm('Сбросить ВСЕ данные?')) { localStorage.clear(); location.reload(); } }
     
     // ========== ТЕМА ==========
     function initTheme() { if (localStorage.getItem('theme') === 'dark') document.body.classList.add('dark'); }
@@ -678,11 +691,31 @@
         document.getElementById('resetAllDataBtn').onclick = resetAll;
         document.getElementById('getSalaryBtn').onclick = () => { let s = prompt('Зарплата:'); if(s) addIncome(parseFloat(s), 'ЗАРПЛАТА'); };
         document.getElementById('getAdvanceBtn').onclick = () => { let s = prompt('Аванс:'); if(s) addIncome(parseFloat(s), 'АВАНС'); };
-        document.getElementById('addExpenseBtn').onclick = () => { let cat = document.getElementById('expenseCategorySelect'); let amt = parseFloat(document.getElementById('expenseAmount').value); if (cat.value && amt) addFinanceTransaction(-amt, `Расход: ${financeCategories[cat.value]?.name} -${amt}₽`); };
-        document.getElementById('topUpPiggyBtn').onclick = () => { let amt = parseFloat(document.getElementById('piggyAmount').value); if (amt) { let bal = (financeData[`${currentYear}-${String(currentMonth+1).padStart(2,'0')}`]?.balance || 0); if (bal >= amt) { addFinanceTransaction(-amt, `🐷 Пополнение копилки: ${amt}₽`); let p = parseFloat(localStorage.getItem('piggyBalance'))||0; localStorage.setItem('piggyBalance', p+amt); updateFinanceUI(); } else alert('Недостаточно средств'); } };
+        document.getElementById('addExpenseBtn').onclick = () => {
+            let cat = document.getElementById('expenseCategorySelect').value;
+            let amt = parseFloat(document.getElementById('expenseAmount').value);
+            if (cat && amt) addFinanceTransaction(-amt, `Расход: ${financeCategories[cat]?.name} -${amt}₽`);
+        };
+        document.getElementById('topUpPiggyBtn').onclick = () => {
+            let amt = parseFloat(document.getElementById('piggyAmount').value);
+            if (amt) {
+                let monthKey = `${currentYear}-${String(currentMonth+1).padStart(2,'0')}`;
+                let bal = financeData[monthKey]?.balance || 0;
+                if (bal >= amt) {
+                    addFinanceTransaction(-amt, `🐷 Пополнение копилки: ${amt}₽`);
+                    let p = parseFloat(localStorage.getItem('piggyBalance'))||0;
+                    localStorage.setItem('piggyBalance', p+amt);
+                    updateFinanceUI();
+                } else alert('Недостаточно средств');
+            }
+        };
         document.getElementById('clearPiggyBtn').onclick = () => { localStorage.setItem('piggyBalance', '0'); updateFinanceUI(); };
         
-        function updateExpenseSelect() { let sel = document.getElementById('expenseCategorySelect'); sel.innerHTML = '<option value="">Выберите</option>'; for (let id in financeCategories) sel.innerHTML += `<option value="${id}">${financeCategories[id].name}</option>`; }
+        function updateExpenseSelect() {
+            let sel = document.getElementById('expenseCategorySelect');
+            sel.innerHTML = '<option value="">Выберите</option>';
+            for (let id in financeCategories) sel.innerHTML += `<option value="${id}">${financeCategories[id].name}</option>`;
+        }
         updateExpenseSelect();
         
         switchFarmPanel('shop');
