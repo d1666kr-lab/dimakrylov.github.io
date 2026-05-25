@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Автобазар: Перекуп машин (исправлено)</title>
+    <title>Автоперекуп: Купи-Отремонти-Продай</title>
     <style>
         * {
             box-sizing: border-box;
@@ -11,8 +11,8 @@
         }
 
         body {
-            background: linear-gradient(145deg, #1a472a 0%, #0e2a1a 100%);
-            font-family: 'Segoe UI', 'Poppins', system-ui, -apple-system, 'Roboto', sans-serif;
+            background: linear-gradient(135deg, #0f2b1d 0%, #1a3a2a 100%);
+            font-family: 'Segoe UI', system-ui, -apple-system, 'Roboto', sans-serif;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -24,32 +24,31 @@
         .game-container {
             max-width: 1300px;
             width: 100%;
-            background: rgba(0, 0, 0, 0.55);
-            backdrop-filter: blur(2px);
-            border-radius: 64px;
-            padding: 20px;
-            box-shadow: 0 25px 40px rgba(0, 0, 0, 0.5), inset 0 1px 2px rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 215, 0, 0.3);
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(3px);
+            border-radius: 56px;
+            padding: 24px;
+            box-shadow: 0 20px 35px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 200, 100, 0.4);
         }
 
         .status-bar {
-            background: #0f212b;
+            background: #0a1a15;
             border-radius: 60px;
-            padding: 15px 30px;
+            padding: 18px 30px;
             margin-bottom: 25px;
             display: flex;
             flex-wrap: wrap;
             justify-content: space-between;
             align-items: center;
             gap: 20px;
-            box-shadow: 0 8px 14px rgba(0, 0, 0, 0.3);
-            border-bottom: 3px solid #ffc857;
+            box-shadow: 0 5px 12px rgba(0, 0, 0, 0.3);
+            border-bottom: 3px solid #f5b642;
         }
 
         .stat {
-            background: #00000066;
-            backdrop-filter: blur(4px);
-            padding: 8px 20px;
+            background: #00000055;
+            padding: 8px 24px;
             border-radius: 40px;
             display: flex;
             align-items: baseline;
@@ -60,27 +59,22 @@
         .stat-label {
             font-size: 0.9rem;
             letter-spacing: 1px;
-            color: #b9e6d9;
+            color: #bbddcc;
         }
 
         .stat-value {
-            font-size: 1.8rem;
+            font-size: 1.9rem;
             font-weight: 800;
-            color: #ffd966;
+            color: #ffda88;
             text-shadow: 0 2px 3px black;
         }
 
         .money {
             color: #f5b042;
-            font-size: 2rem;
         }
 
-        .garage {
-            background: #202c28cc;
-            border-radius: 48px;
-            padding: 20px;
-            margin-bottom: 30px;
-            backdrop-filter: blur(8px);
+        .day-box {
+            background: #2a2418;
         }
 
         .section-title {
@@ -88,11 +82,11 @@
             font-weight: bold;
             margin-left: 12px;
             margin-bottom: 18px;
-            color: #ffe6b3;
+            color: #ffe2b5;
             display: flex;
             align-items: center;
             gap: 12px;
-            border-left: 7px solid #ffb347;
+            border-left: 6px solid #ffaa44;
             padding-left: 20px;
         }
 
@@ -103,20 +97,17 @@
         }
 
         .car-card {
-            background: linear-gradient(135deg, #2c3e2f, #1d2c1f);
+            background: linear-gradient(145deg, #2a3a2c, #1c2a1e);
             border-radius: 32px;
             padding: 18px;
-            transition: all 0.2s ease;
-            box-shadow: 0 10px 18px rgba(0, 0, 0, 0.3);
-            border: 1px solid rgba(255, 200, 100, 0.4);
-            position: relative;
-            overflow: hidden;
+            transition: 0.2s ease;
+            box-shadow: 0 8px 18px rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(245, 180, 80, 0.5);
         }
 
         .car-card:hover {
-            transform: translateY(-5px);
-            border-color: #ffbc6e;
-            box-shadow: 0 20px 25px -8px black;
+            transform: translateY(-4px);
+            border-color: #ffbc5e;
         }
 
         .car-name {
@@ -126,24 +117,22 @@
             justify-content: space-between;
             margin-bottom: 12px;
             color: #f5e7c8;
-            letter-spacing: -0.5px;
         }
 
         .car-price {
-            background: #00000077;
+            background: #00000066;
             border-radius: 28px;
             padding: 8px 15px;
             display: inline-block;
             margin: 8px 0;
             font-weight: bold;
-            color: #ffcf8a;
         }
 
         .price-number {
             font-size: 1.6rem;
             font-weight: 800;
             margin-left: 8px;
-            color: #ffb347;
+            color: #ffb84d;
         }
 
         .car-stats {
@@ -162,7 +151,7 @@
         .stat-badge span:first-child {
             font-size: 0.7rem;
             text-transform: uppercase;
-            color: #b9ceb0;
+            color: #b9d0b0;
         }
 
         .stat-badge span:last-child {
@@ -187,7 +176,7 @@
             font-size: 0.9rem;
             font-weight: 700;
             cursor: pointer;
-            transition: 0.1s linear;
+            transition: 0.08s linear;
             background: #3d5a3c;
             color: #f9eec1;
             box-shadow: 0 2px 5px black;
@@ -200,49 +189,36 @@
         .buy-btn {
             background: #2e7d32;
             color: white;
-            box-shadow: 0 4px 0 #1b5e20;
+            box-shadow: 0 3px 0 #1b5e20;
         }
 
         .sell-btn {
             background: #b6512e;
-            box-shadow: 0 4px 0 #6d2e0e;
+            box-shadow: 0 3px 0 #6d2e0e;
         }
 
-        .upgrade-btn {
-            background: #4f3b1c;
-            color: #ffdfa5;
-            font-size: 0.8rem;
+        .repair-btn {
+            background: #5a6b2f;
+            color: #fff0c0;
+            box-shadow: 0 3px 0 #3a471a;
         }
 
         .market-news {
-            background: #111d18e0;
+            background: #131f1be0;
             border-radius: 36px;
-            padding: 15px 25px;
+            padding: 12px 20px;
             margin-bottom: 25px;
-            display: flex;
-            justify-content: space-between;
-            flex-wrap: wrap;
-            align-items: center;
-            gap: 18px;
-        }
-
-        .news-text {
-            font-size: 1rem;
-            background: #2b443b;
-            padding: 10px 18px;
-            border-radius: 50px;
-            color: #ffefc0;
-            flex: 2;
-            font-weight: 500;
+            text-align: center;
         }
 
         .next-day-btn {
             background: #d9a13b;
-            padding: 12px 28px;
-            font-size: 1.2rem;
+            padding: 12px 25px;
+            font-size: 1.1rem;
             color: #1f2e1c;
-            box-shadow: 0 5px 0 #7e5822;
-            flex-shrink: 0;
+            box-shadow: 0 4px 0 #7e5822;
+            margin-top: 5px;
+            min-width: 180px;
         }
 
         .inventory {
@@ -259,13 +235,24 @@
             font-style: italic;
         }
 
-        .profit-positive {
-            color: #a5d6a5;
-            font-weight: bold;
+        .profit-badge {
+            background: #00000055;
+            border-radius: 20px;
+            padding: 5px 10px;
+            font-size: 0.8rem;
+            margin-top: 8px;
+            text-align: center;
         }
 
-        .profit-negative {
-            color: #ffaa66;
+        .profit-positive {
+            color: #a5f0a5;
+        }
+
+        footer {
+            font-size: 0.7rem;
+            text-align: center;
+            margin-top: 20px;
+            color: #c0d6cc;
         }
 
         @media (max-width: 700px) {
@@ -279,197 +266,201 @@
                 font-size: 1.3rem;
             }
         }
-
-        footer {
-            font-size: 0.7rem;
-            text-align: center;
-            margin-top: 15px;
-            color: #c0d6cc;
-        }
     </style>
 </head>
 <body>
 <div class="game-container">
     <div class="status-bar">
-        <div class="stat"><span class="stat-label">💰 БАЛАНС</span><span class="stat-value money" id="moneyDisplay">0</span></div>
+        <div class="stat"><span class="stat-label">💰 КАПИТАЛ</span><span class="stat-value money" id="moneyDisplay">0</span></div>
         <div class="stat"><span class="stat-label">📅 ДЕНЬ</span><span class="stat-value" id="dayDisplay">1</span></div>
         <div class="stat"><span class="stat-label">🚗 В ГАРАЖЕ</span><span class="stat-value" id="garageCount">0</span></div>
     </div>
 
     <div class="market-news">
-        <div class="news-text" id="newsMessage">Добро пожаловать на автобазар! Покупай дешевле, продавай дороже. Каждый день цены меняются!</div>
-        <button class="next-day-btn" id="nextDayBtn">➡ СЛЕДУЮЩИЙ ДЕНЬ</button>
+        <div id="newsMessage" style="font-size: 1rem; font-weight: 500; color: #ffefcf;">Простая схема: Покупай → Ремонтируй → Продавай в плюс! Каждый день рынок обновляется.</div>
+        <button class="next-day-btn" id="nextDayBtn">➡ НОВЫЙ ДЕНЬ (обновление рынка)</button>
     </div>
 
-    <div class="garage">
-        <div class="section-title">🚘 ДОСТУПНЫЕ АВТОМОБИЛИ НА РЫНКЕ</div>
+    <div style="margin-bottom: 20px;">
+        <div class="section-title">🚘 МАШИНЫ НА ПРОДАЖУ</div>
         <div class="cars-grid" id="marketGrid"></div>
     </div>
 
-    <div class="garage">
-        <div class="section-title">🏁 ВАШ АВТОПАРК</div>
+    <div>
+        <div class="section-title">🏁 ТВОИ АВТО (ремонтируй и продавай)</div>
         <div id="inventoryContainer" class="inventory">Загрузка...</div>
     </div>
-    <footer>⚡ Стратегия перекупа: покупай в дешевый день, продавай когда рынок растет. Ремонт повышает состояние и стоимость!</footer>
+    <footer>⚙️ РЕМОНТ повышает состояние на 7-12% и увеличивает цену. Продавай когда цена выгодная! Без лишних сложностей.</footer>
 </div>
 
 <script>
-    // -------- ИГРОВОЙ ДВИЖОК БЕЗ КЛИКЕРА ----------
-    const CAR_TEMPLATES = [
-        { brand: "Lada Vesta", basePrice: 450, conditionMin: 0.7, conditionMax: 1.0, rarity: "common" },
-        { brand: "Hyundai Solaris", basePrice: 720, conditionMin: 0.75, conditionMax: 0.98, rarity: "common" },
-        { brand: "Toyota Camry", basePrice: 1250, conditionMin: 0.8, conditionMax: 1.0, rarity: "premium" },
-        { brand: "BMW X5", basePrice: 2400, conditionMin: 0.65, conditionMax: 0.95, rarity: "luxury" },
-        { brand: "Mercedes E-Class", basePrice: 2100, conditionMin: 0.7, conditionMax: 0.96, rarity: "luxury" },
-        { brand: "Kia Rio", basePrice: 580, conditionMin: 0.72, conditionMax: 0.99, rarity: "common" },
-        { brand: "Volkswagen Golf", basePrice: 890, conditionMin: 0.68, conditionMax: 0.97, rarity: "mid" },
-        { brand: "Renault Logan", basePrice: 390, conditionMin: 0.65, conditionMax: 0.92, rarity: "economy" },
-        { brand: "Audi A6", basePrice: 1980, conditionMin: 0.73, conditionMax: 0.94, rarity: "luxury" },
-        { brand: "Mazda CX-5", basePrice: 1480, conditionMin: 0.78, conditionMax: 0.98, rarity: "mid" }
+    // -------- ПРОСТАЯ ИГРА: ПОКУПКА -> РЕМОНТ -> ПРОДАЖА В ПЛЮС ----------
+    const CAR_MODELS = [
+        { name: "Lada Granta", baseValue: 320, condMin: 0.65, condMax: 0.92 },
+        { name: "Hyundai Solaris", baseValue: 680, condMin: 0.70, condMax: 0.95 },
+        { name: "Kia Rio", baseValue: 650, condMin: 0.68, condMax: 0.96 },
+        { name: "Volkswagen Polo", baseValue: 720, condMin: 0.72, condMax: 0.94 },
+        { name: "Toyota Corolla", baseValue: 1150, condMin: 0.75, condMax: 0.97 },
+        { name: "Mazda 6", baseValue: 1320, condMin: 0.70, condMax: 0.95 },
+        { name: "BMW 3 series", baseValue: 1980, condMin: 0.68, condMax: 0.93 },
+        { name: "Mercedes C-class", baseValue: 2050, condMin: 0.65, condMax: 0.94 },
+        { name: "Renault Duster", baseValue: 890, condMin: 0.72, condMax: 0.98 },
+        { name: "Nissan Qashqai", baseValue: 1250, condMin: 0.70, condMax: 0.96 }
     ];
 
-    // Класс автомобиля с сохранением цены покупки для отображения профита
+    // Автомобиль
     class Car {
-        constructor(template, marketMultiplier, purchasePrice = null) {
-            this.id = crypto.randomUUID ? crypto.randomUUID() : Math.random() + Date.now();
-            this.brand = template.brand;
-            this.basePrice = template.basePrice;
-            this.condition = parseFloat((Math.random() * (template.conditionMax - template.conditionMin) + template.conditionMin).toFixed(2));
-            this.template = template;
-            // цена покупки (если машина создается на рынке - purchasePrice = null, потом установится при покупке)
-            this.purchasePrice = purchasePrice; 
-            this.currentPrice = this.calculatePrice(marketMultiplier);
+        constructor(modelTemplate, marketFactor) {
+            this.id = Math.random() + Date.now() + Math.random();
+            this.model = modelTemplate.name;
+            this.baseValue = modelTemplate.baseValue;
+            // состояние от 0.6 до 0.95
+            let condMin = modelTemplate.condMin;
+            let condMax = modelTemplate.condMax;
+            this.condition = parseFloat((Math.random() * (condMax - condMin) + condMin).toFixed(2));
+            this.purchasePrice = null;   // цена покупки
+            this.currentPrice = this.calcPrice(marketFactor);
         }
 
-        calculatePrice(marketMultiplier) {
-            let intrinsic = Math.floor(this.basePrice * (0.65 + this.condition * 0.7));
-            let finalPrice = Math.floor(intrinsic * marketMultiplier * (0.85 + Math.random() * 0.3));
-            return Math.max(70, finalPrice);
+        calcPrice(marketFactor) {
+            // цена = базовая * состояние * (0.9..1.1 волатильность) * рыночный множитель
+            let baseMarket = this.baseValue * this.condition;
+            let variation = 0.85 + Math.random() * 0.5;   // 0.85 - 1.35
+            let raw = baseMarket * variation * marketFactor;
+            return Math.max(180, Math.floor(raw));
         }
 
-        refreshPrice(marketMultiplier) {
-            this.currentPrice = this.calculatePrice(marketMultiplier);
+        refreshPrice(marketFactor) {
+            this.currentPrice = this.calcPrice(marketFactor);
             return this.currentPrice;
         }
 
-        // Улучшение авто
-        improve(improveAmount, marketMultiplier) {
-            let newCondition = Math.min(0.99, this.condition + improveAmount);
-            this.condition = parseFloat(newCondition.toFixed(2));
-            this.currentPrice = this.calculatePrice(marketMultiplier);
-            return this.currentPrice;
+        // ремонт увеличивает состояние и цену
+        repair(marketFactor) {
+            let increase = 0.07 + Math.random() * 0.08;  // 7-15%
+            let newCond = Math.min(0.99, this.condition + increase);
+            let improvement = newCond - this.condition;
+            this.condition = parseFloat(newCond.toFixed(2));
+            let oldPrice = this.currentPrice;
+            this.currentPrice = this.calcPrice(marketFactor);
+            return {
+                success: true,
+                improvement: improvement,
+                oldPrice: oldPrice,
+                newPrice: this.currentPrice
+            };
         }
     }
 
-    class CarDealerGame {
+    // Игровой менеджер (без лишних случайных налогов)
+    class GameDealer {
         constructor() {
-            this.money = 4000;          // стартовый капитал
+            this.money = 3800;           // стартовый капитал
             this.day = 1;
-            this.myCars = [];            // машинки в гараже игрока
-            this.marketCars = [];        // доступные авто на рынке
+            this.myCars = [];
+            this.marketCars = [];
             this.marketTrend = 1.0;
-            this.lastNews = "Начинайте торговать!";
         }
 
-        generateMarketTrend() {
-            let volatility = 0.6 + Math.random() * 1.1; // 0.6 ... 1.7
-            let trendType = "";
-            if (volatility < 0.8) trendType = "Кризис перепроизводства 📉";
-            else if (volatility < 1.05) trendType = "Стабильный рынок 📊";
-            else if (volatility < 1.4) trendType = "Рост спроса на авто 📈";
-            else trendType = "АВТОАУКЦИОННЫЙ БУМ 🔥";
-            this.marketTrend = parseFloat(volatility.toFixed(2));
-            let news = `${trendType}: цены ${this.marketTrend > 1 ? 'повысились' : (this.marketTrend < 0.9 ? 'упали' : 'стабильны')} (коэф. ${this.marketTrend.toFixed(2)}x)`;
-            this.lastNews = news;
-            return news;
+        // генерация рыночного коэффициента (от 0.75 до 1.45)
+        generateMarketFactor() {
+            // плавные колебания без экстрима
+            let factor = 0.78 + Math.random() * 0.7;
+            this.marketTrend = parseFloat(factor.toFixed(2));
+            return this.marketTrend;
         }
 
+        // обновить рынок: новые автомобили
         refreshMarket() {
-            const carCount = 5 + Math.floor(Math.random() * 4);
-            const newMarket = [];
-            const shuffledTemplates = [...CAR_TEMPLATES];
+            let carCount = 5 + Math.floor(Math.random() * 4); // 5-8 машин
+            let newMarket = [];
+            let shuffled = [...CAR_MODELS];
             for (let i = 0; i < carCount; i++) {
-                let randomTemplate = shuffledTemplates[Math.floor(Math.random() * shuffledTemplates.length)];
-                let car = new Car(randomTemplate, this.marketTrend);
+                let template = shuffled[Math.floor(Math.random() * shuffled.length)];
+                let car = new Car(template, this.marketTrend);
                 newMarket.push(car);
             }
             this.marketCars = newMarket;
         }
 
+        // переоценить гараж
         reevaluateGarage() {
             for (let car of this.myCars) {
                 car.refreshPrice(this.marketTrend);
             }
         }
 
+        // покупка
         buyCar(index) {
-            if (index < 0 || index >= this.marketCars.length) return { success: false, msg: "Ошибка выбора" };
+            if (index < 0 || index >= this.marketCars.length) {
+                return { success: false, msg: "Ошибка" };
+            }
             const car = this.marketCars[index];
             if (this.money >= car.currentPrice) {
                 this.money -= car.currentPrice;
-                // Создаем новый экземпляр с фиксацией цены покупки
-                const boughtCar = new Car(car.template, this.marketTrend, car.currentPrice);
-                boughtCar.condition = car.condition;
-                boughtCar.currentPrice = car.currentPrice;
-                boughtCar.id = car.id;
-                this.myCars.push(boughtCar);
+                // создаем машину с фиксацией цены покупки
+                const newCar = new Car({ name: car.model, baseValue: car.baseValue, condMin: car.condition, condMax: car.condition }, this.marketTrend);
+                newCar.condition = car.condition;
+                newCar.currentPrice = car.currentPrice;
+                newCar.purchasePrice = car.currentPrice;
+                newCar.id = car.id;
+                this.myCars.push(newCar);
                 this.marketCars.splice(index, 1);
-                return { success: true, msg: `✅ Куплен ${boughtCar.brand} за ${boughtCar.currentPrice}₽! Состояние: ${(boughtCar.condition*100).toFixed(0)}%` };
+                return { success: true, msg: `✅ Купил ${newCar.model} за ${newCar.currentPrice}₽. Состояние: ${(newCar.condition*100).toFixed(0)}%` };
             } else {
-                return { success: false, msg: `❌ Недостаточно денег! Нужно ${car.currentPrice}₽` };
+                return { success: false, msg: `❌ Не хватает ${car.currentPrice}₽. Заработай на ремонте и продаже!` };
             }
         }
 
+        // продажа
         sellCar(index) {
-            if (index < 0 || index >= this.myCars.length) return { success: false, msg: "Нет такого авто" };
+            if (index < 0 || index >= this.myCars.length) {
+                return { success: false, msg: "Машина не найдена" };
+            }
             const car = this.myCars[index];
             const sellPrice = car.currentPrice;
-            const purchasePrice = car.purchasePrice || sellPrice;
-            const profit = sellPrice - purchasePrice;
+            const bought = car.purchasePrice || sellPrice;
+            const profit = sellPrice - bought;
             this.money += sellPrice;
-            const profitText = profit >= 0 ? `+${profit}₽ прибыль` : `${profit}₽ убыток`;
             this.myCars.splice(index, 1);
-            return { success: true, msg: `💰 Продан ${car.brand} за ${sellPrice}₽ (${profitText})` };
-        }
-
-        improveCar(index) {
-            if (index < 0 || index >= this.myCars.length) return { success: false, msg: "Авто не найдено" };
-            const car = this.myCars[index];
-            const cost = Math.floor(car.currentPrice * 0.12);
-            if (this.money >= cost) {
-                this.money -= cost;
-                let improvement = parseFloat((Math.random() * 0.1 + 0.05).toFixed(2));
-                let oldPrice = car.currentPrice;
-                car.improve(improvement, this.marketTrend);
-                let newPrice = car.currentPrice;
-                return { success: true, msg: `🔧 Улучшен ${car.brand}: состояние +${(improvement*100).toFixed(0)}%, цена ${oldPrice}₽ → ${newPrice}₽ (потрачено ${cost}₽)` };
+            if (profit >= 0) {
+                return { success: true, msg: `💰 ПРОДАЛ ${car.model} за ${sellPrice}₽! Чистая прибыль: +${profit}₽` };
             } else {
-                return { success: false, msg: `💸 Не хватает ${cost}₽ на ремонт` };
+                return { success: true, msg: `⚠️ ПРОДАЛ ${car.model} за ${sellPrice}₽. Убыток: ${profit}₽ (лучше отремонтировать перед продажей!)` };
             }
         }
 
+        // ремонт машины (увеличивает состояние и цену)
+        repairCar(index) {
+            if (index < 0 || index >= this.myCars.length) {
+                return { success: false, msg: "Авто не в гараже" };
+            }
+            const car = this.myCars[index];
+            const repairCost = Math.floor(car.currentPrice * 0.09);  // 9% от текущей цены
+            if (this.money >= repairCost) {
+                this.money -= repairCost;
+                const result = car.repair(this.marketTrend);
+                if (result.success) {
+                    return { success: true, msg: `🔧 РЕМОНТ ${car.model}: состояние +${(result.improvement*100).toFixed(0)}%, цена ${result.oldPrice}₽ → ${result.newPrice}₽ (затраты ${repairCost}₽)` };
+                } else {
+                    return { success: false, msg: "Ошибка ремонта" };
+                }
+            } else {
+                return { success: false, msg: `💸 Не хватает ${repairCost}₽ на ремонт. Продай что-нибудь!` };
+            }
+        }
+
+        // новый день (обновление рынка и переоценка)
         nextDay() {
             this.day++;
-            let trendNews = this.generateMarketTrend();
+            // новый рыночный тренд
+            this.generateMarketFactor();
+            // переоцениваем машины в гараже
             this.reevaluateGarage();
+            // обновляем рыночные предложения
             this.refreshMarket();
-            
-            // Случайные события
-            let randomEvent = Math.random();
-            if (randomEvent < 0.12) {
-                let tax = Math.floor(this.money * 0.04);
-                if (tax > 0 && this.money > tax) {
-                    this.money = Math.max(0, this.money - tax);
-                    trendNews += ` 🔻 Налог на стоянку: -${tax}₽.`;
-                }
-            } else if (randomEvent > 0.87) {
-                let bonus = Math.floor(Math.random() * 500 + 100);
-                this.money += bonus;
-                trendNews += ` ✨ Кешбэк от автосалона! +${bonus}₽.`;
-            }
-            
-            this.lastNews = trendNews;
-            return { news: this.lastNews, day: this.day };
+            let news = `📊 День ${this.day}. Рыночный коэффициент: ${this.marketTrend}x. Цены на автомобили изменились!`;
+            return { news: news, day: this.day, trend: this.marketTrend };
         }
 
         getState() {
@@ -478,153 +469,136 @@
                 day: this.day,
                 myCars: [...this.myCars],
                 marketCars: [...this.marketCars],
-                trend: this.marketTrend,
-                news: this.lastNews
+                trend: this.marketTrend
             };
         }
     }
 
-    // ------------------- UI ---------------------------------
-    let game = new CarDealerGame();
+    // ------------------- ОТРИСОВКА ИНТЕРФЕЙСА ------------------
+    let game = new GameDealer();
 
     function initGame() {
-        game.generateMarketTrend();
+        game.generateMarketFactor();
         game.refreshMarket();
         renderAll();
     }
 
     function renderAll() {
-        renderStats();
+        document.getElementById('moneyDisplay').innerText = Math.floor(game.money);
+        document.getElementById('dayDisplay').innerText = game.day;
+        document.getElementById('garageCount').innerText = game.myCars.length;
         renderMarket();
         renderInventory();
     }
 
-    function renderStats() {
-        document.getElementById('moneyDisplay').innerText = Math.floor(game.money);
-        document.getElementById('dayDisplay').innerText = game.day;
-        document.getElementById('garageCount').innerText = game.myCars.length;
-        const newsDiv = document.getElementById('newsMessage');
-        if (game.lastNews) newsDiv.innerText = game.lastNews;
-    }
-
     function renderMarket() {
-        const marketContainer = document.getElementById('marketGrid');
-        const marketCars = game.marketCars;
-        if (!marketCars.length) {
-            marketContainer.innerHTML = `<div style="grid-column:1/-1; text-align:center; padding:30px;">🚫 Сегодня нет машин на рынке? Завтра привезут!</div>`;
+        const container = document.getElementById('marketGrid');
+        const cars = game.marketCars;
+        if (!cars.length) {
+            container.innerHTML = `<div style="grid-column:1/-1; text-align:center; padding:30px;">🚫 Сегодня нет машин. Нажми "Новый день"</div>`;
             return;
         }
-        marketContainer.innerHTML = '';
-        marketCars.forEach((car, idx) => {
+        container.innerHTML = '';
+        cars.forEach((car, idx) => {
             const card = createCarCard(car, 'market', idx);
-            marketContainer.appendChild(card);
+            container.appendChild(card);
         });
     }
 
     function renderInventory() {
-        const invContainer = document.getElementById('inventoryContainer');
+        const invDiv = document.getElementById('inventoryContainer');
         const myCars = game.myCars;
         if (myCars.length === 0) {
-            invContainer.innerHTML = `<div class="empty-message">🚗 Ваш гараж пуст. Приобретите машину на рынке, чтобы начать перепродажу!</div>`;
+            invDiv.innerHTML = `<div class="empty-message">🚗 Гараж пуст. Купи машину, отремонтируй и продай с выгодой!</div>`;
             return;
         }
-        const gridDiv = document.createElement('div');
-        gridDiv.className = 'cars-grid';
+        const grid = document.createElement('div');
+        grid.className = 'cars-grid';
         myCars.forEach((car, idx) => {
             const card = createCarCard(car, 'garage', idx);
-            gridDiv.appendChild(card);
+            grid.appendChild(card);
         });
-        invContainer.innerHTML = '';
-        invContainer.appendChild(gridDiv);
+        invDiv.innerHTML = '';
+        invDiv.appendChild(grid);
     }
 
     function createCarCard(car, type, index) {
         const cardDiv = document.createElement('div');
         cardDiv.className = 'car-card';
-        const conditionPercent = Math.floor(car.condition * 100);
+        let conditionPercent = Math.floor(car.condition * 100);
         
-        // Расчет потенциальной прибыли для гаража
-        let profitHtml = '';
+        // доп. информация о прибыли для гаража
+        let profitInfo = '';
         if (type === 'garage' && car.purchasePrice) {
-            const profit = car.currentPrice - car.purchasePrice;
-            const profitPercent = ((profit / car.purchasePrice) * 100).toFixed(0);
-            const profitClass = profit >= 0 ? 'profit-positive' : 'profit-negative';
-            profitHtml = `<div class="car-price" style="background:#00000055; margin-top:6px; font-size:0.8rem;">
-                            📊 Потенц. прибыль: <span class="${profitClass}">${profit >= 0 ? '+' : ''}${profit}₽ (${profitPercent}%)</span>
-                          </div>`;
+            let potentialProfit = car.currentPrice - car.purchasePrice;
+            let profitClass = potentialProfit >= 0 ? 'profit-positive' : '';
+            profitInfo = `<div class="profit-badge">💰 Куплена за ${car.purchasePrice}₽ | 
+                          <span class="${profitClass}">потенц. доход: ${potentialProfit >= 0 ? '+' : ''}${potentialProfit}₽</span></div>`;
         }
 
         cardDiv.innerHTML = `
             <div class="car-name">
-                <span>${car.brand}</span>
+                <span>${car.model}</span>
                 <span>🔧 ${conditionPercent}%</span>
             </div>
-            <div class="car-price" style="background:#00000066;">
-                💵 Текущая цена: <span class="price-number">${car.currentPrice}₽</span>
+            <div class="car-price">
+                💵 ЦЕНА: <span class="price-number">${car.currentPrice}₽</span>
             </div>
-            ${type === 'garage' && car.purchasePrice ? `<div style="font-size:0.8rem; margin:4px 0 0 12px; opacity:0.8;">💰 Куплена за: ${car.purchasePrice}₽</div>` : ''}
-            ${profitHtml}
+            ${profitInfo}
             <div class="car-stats">
-                <div class="stat-badge"><span>база</span><span>${car.basePrice}₽</span></div>
+                <div class="stat-badge"><span>базовая цена</span><span>${car.baseValue}₽</span></div>
                 <div class="stat-badge"><span>состояние</span><span>${conditionPercent}%</span></div>
-                <div class="stat-badge"><span>рынок</span><span>${game.marketTrend.toFixed(2)}x</span></div>
+                <div class="stat-badge"><span>рынок ×</span><span>${game.marketTrend}</span></div>
             </div>
             <div class="actions">
-                ${type === 'market' ? `<button class="buy-btn" data-action="buy" data-index="${index}">💰 КУПИТЬ</button>` : ''}
-                ${type === 'garage' ? `<button class="sell-btn" data-action="sell" data-index="${index}">📢 ПРОДАТЬ</button>` : ''}
-                ${type === 'garage' ? `<button class="upgrade-btn" data-action="upgrade" data-index="${index}">🔧 РЕМОНТ</button>` : ''}
+                ${type === 'market' ? `<button class="buy-btn" data-action="buy" data-idx="${index}">🚘 КУПИТЬ</button>` : ''}
+                ${type === 'garage' ? `<button class="repair-btn" data-action="repair" data-idx="${index}">🔧 РЕМОНТ</button>` : ''}
+                ${type === 'garage' ? `<button class="sell-btn" data-action="sell" data-idx="${index}">💸 ПРОДАТЬ</button>` : ''}
             </div>
         `;
-
+        
         const buyBtn = cardDiv.querySelector('[data-action="buy"]');
+        const repairBtn = cardDiv.querySelector('[data-action="repair"]');
         const sellBtn = cardDiv.querySelector('[data-action="sell"]');
-        const upgradeBtn = cardDiv.querySelector('[data-action="upgrade"]');
-
+        
         if (buyBtn) {
-            buyBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                const idx = parseInt(buyBtn.dataset.index);
-                const result = game.buyCar(idx);
-                showToastMessage(result.msg);
+            buyBtn.addEventListener('click', () => {
+                const res = game.buyCar(parseInt(buyBtn.dataset.idx));
+                showMessage(res.msg);
+                renderAll();
+            });
+        }
+        if (repairBtn) {
+            repairBtn.addEventListener('click', () => {
+                const res = game.repairCar(parseInt(repairBtn.dataset.idx));
+                showMessage(res.msg);
                 renderAll();
             });
         }
         if (sellBtn) {
-            sellBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                const idx = parseInt(sellBtn.dataset.index);
-                const result = game.sellCar(idx);
-                showToastMessage(result.msg);
-                renderAll();
-            });
-        }
-        if (upgradeBtn) {
-            upgradeBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                const idx = parseInt(upgradeBtn.dataset.index);
-                const result = game.improveCar(idx);
-                showToastMessage(result.msg);
+            sellBtn.addEventListener('click', () => {
+                const res = game.sellCar(parseInt(sellBtn.dataset.idx));
+                showMessage(res.msg);
                 renderAll();
             });
         }
         return cardDiv;
     }
 
-    let toastTimeout = null;
-    function showToastMessage(msg) {
-        let newsDiv = document.getElementById('newsMessage');
-        const originalMsg = game.lastNews;
-        newsDiv.innerText = msg;
-        if (toastTimeout) clearTimeout(toastTimeout);
-        toastTimeout = setTimeout(() => {
-            if (game.lastNews) newsDiv.innerText = game.lastNews;
-            else newsDiv.innerText = originalMsg;
-        }, 2000);
+    let msgTimeout;
+    function showMessage(text) {
+        const newsDiv = document.getElementById('newsMessage');
+        const original = newsDiv.innerText;
+        newsDiv.innerText = text;
+        if (msgTimeout) clearTimeout(msgTimeout);
+        msgTimeout = setTimeout(() => {
+            newsDiv.innerText = original;
+        }, 2200);
     }
 
     document.getElementById('nextDayBtn').addEventListener('click', () => {
         const result = game.nextDay();
-        showToastMessage(`📆 День ${result.day}: Рынок обновлен`);
+        showMessage(`📅 ${result.news}`);
         renderAll();
     });
 
