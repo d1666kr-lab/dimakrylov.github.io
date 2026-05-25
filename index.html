@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Автобазар: Перекуп машин</title>
+    <title>Автобазар: Перекуп машин (исправлено)</title>
     <style>
         * {
             box-sizing: border-box;
@@ -21,7 +21,6 @@
             padding: 20px;
         }
 
-        /* главный контейнер игры */
         .game-container {
             max-width: 1300px;
             width: 100%;
@@ -33,7 +32,6 @@
             border: 1px solid rgba(255, 215, 0, 0.3);
         }
 
-        /* панель статуса */
         .status-bar {
             background: #0f212b;
             border-radius: 60px;
@@ -77,11 +75,6 @@
             font-size: 2rem;
         }
 
-        .day {
-            background: #2e1e0e;
-        }
-
-        /* гараж: сетка автомобилей */
         .garage {
             background: #202c28cc;
             border-radius: 48px;
@@ -109,7 +102,6 @@
             gap: 22px;
         }
 
-        /* карточка машины */
         .car-card {
             background: linear-gradient(135deg, #2c3e2f, #1d2c1f);
             border-radius: 32px;
@@ -267,6 +259,15 @@
             font-style: italic;
         }
 
+        .profit-positive {
+            color: #a5d6a5;
+            font-weight: bold;
+        }
+
+        .profit-negative {
+            color: #ffaa66;
+        }
+
         @media (max-width: 700px) {
             .cars-grid {
                 grid-template-columns: 1fr;
@@ -309,12 +310,11 @@
         <div class="section-title">🏁 ВАШ АВТОПАРК</div>
         <div id="inventoryContainer" class="inventory">Загрузка...</div>
     </div>
-    <footer>⚡ Стратегия перекупа: лови момент! Цены колеблются от состояния рынка и "капризов покупателей". Удачи на торгах!</footer>
+    <footer>⚡ Стратегия перекупа: покупай в дешевый день, продавай когда рынок растет. Ремонт повышает состояние и стоимость!</footer>
 </div>
 
 <script>
     // -------- ИГРОВОЙ ДВИЖОК БЕЗ КЛИКЕРА ----------
-    // Список марок авто с базовыми параметрами
     const CAR_TEMPLATES = [
         { brand: "Lada Vesta", basePrice: 450, conditionMin: 0.7, conditionMax: 1.0, rarity: "common" },
         { brand: "Hyundai Solaris", basePrice: 720, conditionMin: 0.75, conditionMax: 0.98, rarity: "common" },
@@ -328,51 +328,55 @@
         { brand: "Mazda CX-5", basePrice: 1480, conditionMin: 0.78, conditionMax: 0.98, rarity: "mid" }
     ];
 
-    // Генератор случайной цены с учётом "состояния" и рыночного коэффициента (волатильность)
-    // marketTrend множитель (от 0.7 до 1.5) задаётся каждый день
+    // Класс автомобиля с сохранением цены покупки для отображения профита
     class Car {
-        constructor(template, marketMultiplier, dayModifier = 1.0) {
+        constructor(template, marketMultiplier, purchasePrice = null) {
             this.id = crypto.randomUUID ? crypto.randomUUID() : Math.random() + Date.now();
             this.brand = template.brand;
             this.basePrice = template.basePrice;
-            // состояние авто (от 0 до 1) влияет на цену
             this.condition = parseFloat((Math.random() * (template.conditionMax - template.conditionMin) + template.conditionMin).toFixed(2));
-            // базовая рыночная стоимость = базовая цена * состояние
-            let intrinsic = Math.floor(this.basePrice * (0.7 + this.condition * 0.6));
-            // итоговая цена зависит от рыночного коэффициента marketMultiplier + легкая случайность
-            let finalPrice = Math.floor(intrinsic * marketMultiplier * (0.88 + Math.random() * 0.24));
-            this.currentPrice = Math.max(80, finalPrice);
             this.template = template;
+            // цена покупки (если машина создается на рынке - purchasePrice = null, потом установится при покупке)
+            this.purchasePrice = purchasePrice; 
+            this.currentPrice = this.calculatePrice(marketMultiplier);
         }
 
-        // пересчитать цену в новый день (новый рыночный множитель)
+        calculatePrice(marketMultiplier) {
+            let intrinsic = Math.floor(this.basePrice * (0.65 + this.condition * 0.7));
+            let finalPrice = Math.floor(intrinsic * marketMultiplier * (0.85 + Math.random() * 0.3));
+            return Math.max(70, finalPrice);
+        }
+
         refreshPrice(marketMultiplier) {
-            let intrinsic = Math.floor(this.basePrice * (0.7 + this.condition * 0.6));
-            let newPrice = Math.floor(intrinsic * marketMultiplier * (0.85 + Math.random() * 0.3));
-            this.currentPrice = Math.max(70, newPrice);
+            this.currentPrice = this.calculatePrice(marketMultiplier);
+            return this.currentPrice;
+        }
+
+        // Улучшение авто
+        improve(improveAmount, marketMultiplier) {
+            let newCondition = Math.min(0.99, this.condition + improveAmount);
+            this.condition = parseFloat(newCondition.toFixed(2));
+            this.currentPrice = this.calculatePrice(marketMultiplier);
             return this.currentPrice;
         }
     }
 
-    // Игровой менеджер
     class CarDealerGame {
         constructor() {
-            this.money = 3500;          // стартовый капитал
+            this.money = 4000;          // стартовый капитал
             this.day = 1;
             this.myCars = [];            // машинки в гараже игрока
-            this.marketCars = [];        // доступные авто на рынке (обновляются каждый день)
+            this.marketCars = [];        // доступные авто на рынке
             this.marketTrend = 1.0;
             this.lastNews = "Начинайте торговать!";
-            this.historyEvents = [];
         }
 
-        // Генерация нового рыночного тренда (случайный коэффициент и новости)
         generateMarketTrend() {
-            let volatility = 0.65 + Math.random() * 1.0; // 0.65 ... 1.65
+            let volatility = 0.6 + Math.random() * 1.1; // 0.6 ... 1.7
             let trendType = "";
-            if (volatility < 0.85) trendType = "Кризис перепроизводства 📉";
+            if (volatility < 0.8) trendType = "Кризис перепроизводства 📉";
             else if (volatility < 1.05) trendType = "Стабильный рынок 📊";
-            else if (volatility < 1.35) trendType = "Рост спроса на авто 📈";
+            else if (volatility < 1.4) trendType = "Рост спроса на авто 📈";
             else trendType = "АВТОАУКЦИОННЫЙ БУМ 🔥";
             this.marketTrend = parseFloat(volatility.toFixed(2));
             let news = `${trendType}: цены ${this.marketTrend > 1 ? 'повысились' : (this.marketTrend < 0.9 ? 'упали' : 'стабильны')} (коэф. ${this.marketTrend.toFixed(2)}x)`;
@@ -380,9 +384,8 @@
             return news;
         }
 
-        // обновить рыночные автомобили (полностью новый список из 5-7 машин)
         refreshMarket() {
-            const carCount = 5 + Math.floor(Math.random() * 4); // от 5 до 8 авто
+            const carCount = 5 + Math.floor(Math.random() * 4);
             const newMarket = [];
             const shuffledTemplates = [...CAR_TEMPLATES];
             for (let i = 0; i < carCount; i++) {
@@ -393,85 +396,82 @@
             this.marketCars = newMarket;
         }
 
-        // Обновить цены у машин в гараже (переоценка каждый день)
         reevaluateGarage() {
             for (let car of this.myCars) {
                 car.refreshPrice(this.marketTrend);
             }
         }
 
-        // Покупка автомобиля из маркета по индексу
         buyCar(index) {
             if (index < 0 || index >= this.marketCars.length) return { success: false, msg: "Ошибка выбора" };
             const car = this.marketCars[index];
             if (this.money >= car.currentPrice) {
                 this.money -= car.currentPrice;
-                this.myCars.push(car);
+                // Создаем новый экземпляр с фиксацией цены покупки
+                const boughtCar = new Car(car.template, this.marketTrend, car.currentPrice);
+                boughtCar.condition = car.condition;
+                boughtCar.currentPrice = car.currentPrice;
+                boughtCar.id = car.id;
+                this.myCars.push(boughtCar);
                 this.marketCars.splice(index, 1);
-                return { success: true, msg: `✅ Куплен ${car.brand} за ${car.currentPrice}₽! Состояние: ${(car.condition*100).toFixed(0)}%` };
+                return { success: true, msg: `✅ Куплен ${boughtCar.brand} за ${boughtCar.currentPrice}₽! Состояние: ${(boughtCar.condition*100).toFixed(0)}%` };
             } else {
                 return { success: false, msg: `❌ Недостаточно денег! Нужно ${car.currentPrice}₽` };
             }
         }
 
-        // Продажа автомобиля из гаража
         sellCar(index) {
             if (index < 0 || index >= this.myCars.length) return { success: false, msg: "Нет такого авто" };
             const car = this.myCars[index];
-            this.money += car.currentPrice;
+            const sellPrice = car.currentPrice;
+            const purchasePrice = car.purchasePrice || sellPrice;
+            const profit = sellPrice - purchasePrice;
+            this.money += sellPrice;
+            const profitText = profit >= 0 ? `+${profit}₽ прибыль` : `${profit}₽ убыток`;
             this.myCars.splice(index, 1);
-            return { success: true, msg: `💰 Продан ${car.brand} за ${car.currentPrice}₽ (прибыль/убыток от покупки не гарантирован)` };
+            return { success: true, msg: `💰 Продан ${car.brand} за ${sellPrice}₽ (${profitText})` };
         }
 
-        // Апгрейд / вложение в "предпродажную подготовку" - поднимает состояние авто на 0.05-0.12 и цену, но тратит деньги
         improveCar(index) {
             if (index < 0 || index >= this.myCars.length) return { success: false, msg: "Авто не найдено" };
             const car = this.myCars[index];
             const cost = Math.floor(car.currentPrice * 0.12);
             if (this.money >= cost) {
                 this.money -= cost;
-                let oldCondition = car.condition;
-                let improvement = parseFloat((Math.random() * 0.1 + 0.04).toFixed(2));
-                let newCondition = Math.min(0.99, oldCondition + improvement);
-                car.condition = parseFloat(newCondition.toFixed(2));
-                // пересчёт цены с новым состоянием и текущим трендом
-                let newIntrinsic = Math.floor(car.basePrice * (0.7 + car.condition * 0.6));
-                let newPrice = Math.floor(newIntrinsic * this.marketTrend * (0.88 + Math.random() * 0.24));
-                car.currentPrice = Math.max(70, newPrice);
-                return { success: true, msg: `🔧 Улучшен ${car.brand}: состояние +${(improvement*100).toFixed(0)}%, стоимость выросла до ${car.currentPrice}₽` };
+                let improvement = parseFloat((Math.random() * 0.1 + 0.05).toFixed(2));
+                let oldPrice = car.currentPrice;
+                car.improve(improvement, this.marketTrend);
+                let newPrice = car.currentPrice;
+                return { success: true, msg: `🔧 Улучшен ${car.brand}: состояние +${(improvement*100).toFixed(0)}%, цена ${oldPrice}₽ → ${newPrice}₽ (потрачено ${cost}₽)` };
             } else {
                 return { success: false, msg: `💸 Не хватает ${cost}₽ на ремонт` };
             }
         }
 
-        // Переход на следующий день - главная механика без кликов по ресурсам
         nextDay() {
             this.day++;
-            // 1. Генерируем новый рыночный тренд
             let trendNews = this.generateMarketTrend();
-            // 2. Переоцениваем все машины в гараже игрока согласно новому тренду
             this.reevaluateGarage();
-            // 3. Обновляем доступные машины на рынке
             this.refreshMarket();
-            // 4. Добавляем небольшой "случайный бонус/налог"? (интересный риск)
+            
+            // Случайные события
             let randomEvent = Math.random();
-            if (randomEvent < 0.15) {
-                let tax = Math.floor(this.money * 0.05);
-                if (tax > 0) {
+            if (randomEvent < 0.12) {
+                let tax = Math.floor(this.money * 0.04);
+                if (tax > 0 && this.money > tax) {
                     this.money = Math.max(0, this.money - tax);
-                    trendNews += ` 🔻 Налог на роскошь: -${tax}₽.`;
+                    trendNews += ` 🔻 Налог на стоянку: -${tax}₽.`;
                 }
-            } else if (randomEvent > 0.88) {
-                let bonus = Math.floor(Math.random() * 400 + 80);
+            } else if (randomEvent > 0.87) {
+                let bonus = Math.floor(Math.random() * 500 + 100);
                 this.money += bonus;
                 trendNews += ` ✨ Кешбэк от автосалона! +${bonus}₽.`;
             }
-
+            
             this.lastNews = trendNews;
             return { news: this.lastNews, day: this.day };
         }
 
-        // получить все данные для рендера
         getState() {
             return {
                 money: Math.floor(this.money),
@@ -484,10 +484,9 @@
         }
     }
 
-    // ------------------- UI КОМПОНЕНТ ---------------------------------
+    // ------------------- UI ---------------------------------
     let game = new CarDealerGame();
 
-    // Инициализация первого дня
     function initGame() {
         game.generateMarketTrend();
         game.refreshMarket();
@@ -543,18 +542,28 @@
         const cardDiv = document.createElement('div');
         cardDiv.className = 'car-card';
         const conditionPercent = Math.floor(car.condition * 100);
-        let priceColor = '#ffcf8a';
-        if (car.currentPrice < car.basePrice * 0.7) priceColor = '#a5d6a5';
-        if (car.currentPrice > car.basePrice * 1.3) priceColor = '#ffaa66';
+        
+        // Расчет потенциальной прибыли для гаража
+        let profitHtml = '';
+        if (type === 'garage' && car.purchasePrice) {
+            const profit = car.currentPrice - car.purchasePrice;
+            const profitPercent = ((profit / car.purchasePrice) * 100).toFixed(0);
+            const profitClass = profit >= 0 ? 'profit-positive' : 'profit-negative';
+            profitHtml = `<div class="car-price" style="background:#00000055; margin-top:6px; font-size:0.8rem;">
+                            📊 Потенц. прибыль: <span class="${profitClass}">${profit >= 0 ? '+' : ''}${profit}₽ (${profitPercent}%)</span>
+                          </div>`;
+        }
 
         cardDiv.innerHTML = `
             <div class="car-name">
                 <span>${car.brand}</span>
                 <span>🔧 ${conditionPercent}%</span>
             </div>
-            <div class="car-price" style="background:#00000066; color:${priceColor}">
-                💵 Цена: <span class="price-number">${car.currentPrice}₽</span>
+            <div class="car-price" style="background:#00000066;">
+                💵 Текущая цена: <span class="price-number">${car.currentPrice}₽</span>
             </div>
+            ${type === 'garage' && car.purchasePrice ? `<div style="font-size:0.8rem; margin:4px 0 0 12px; opacity:0.8;">💰 Куплена за: ${car.purchasePrice}₽</div>` : ''}
+            ${profitHtml}
             <div class="car-stats">
                 <div class="stat-badge"><span>база</span><span>${car.basePrice}₽</span></div>
                 <div class="stat-badge"><span>состояние</span><span>${conditionPercent}%</span></div>
@@ -563,11 +572,10 @@
             <div class="actions">
                 ${type === 'market' ? `<button class="buy-btn" data-action="buy" data-index="${index}">💰 КУПИТЬ</button>` : ''}
                 ${type === 'garage' ? `<button class="sell-btn" data-action="sell" data-index="${index}">📢 ПРОДАТЬ</button>` : ''}
-                ${type === 'garage' ? `<button class="upgrade-btn" data-action="upgrade" data-index="${index}">🔧 РЕМОНТ (+цена)</button>` : ''}
+                ${type === 'garage' ? `<button class="upgrade-btn" data-action="upgrade" data-index="${index}">🔧 РЕМОНТ</button>` : ''}
             </div>
         `;
 
-        // обработчики событий
         const buyBtn = cardDiv.querySelector('[data-action="buy"]');
         const sellBtn = cardDiv.querySelector('[data-action="sell"]');
         const upgradeBtn = cardDiv.querySelector('[data-action="upgrade"]');
@@ -602,7 +610,6 @@
         return cardDiv;
     }
 
-    // маленькое уведомление
     let toastTimeout = null;
     function showToastMessage(msg) {
         let newsDiv = document.getElementById('newsMessage');
@@ -612,18 +619,15 @@
         toastTimeout = setTimeout(() => {
             if (game.lastNews) newsDiv.innerText = game.lastNews;
             else newsDiv.innerText = originalMsg;
-        }, 1800);
+        }, 2000);
     }
 
-    // Кнопка следующего дня
     document.getElementById('nextDayBtn').addEventListener('click', () => {
         const result = game.nextDay();
-        showToastMessage(`📆 День ${result.day}: ${result.news}`);
+        showToastMessage(`📆 День ${result.day}: Рынок обновлен`);
         renderAll();
-        // дополнительная анимация при смене дня
     });
 
-    // запуск
     initGame();
 </script>
 </body>
