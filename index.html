@@ -1,554 +1,351 @@
-
 <!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>VK Coin Transfer — Telegram App</title>
-    <script src="https://telegram.org/js/telegram-web-app.js?56"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Clicker Game - Telegram Mini App</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
         }
+
         body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
             background: var(--tg-theme-bg-color, #ffffff);
             color: var(--tg-theme-text-color, #000000);
-            padding: 20px 16px 32px;
             min-height: 100vh;
-            transition: background 0.2s ease;
+            padding: 20px;
         }
+
         .container {
             max-width: 500px;
             margin: 0 auto;
         }
-        .card {
-            background: var(--tg-theme-secondary-bg-color, #f5f5f5);
-            border-radius: 24px;
-            padding: 20px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-            transition: background 0.2s;
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-bottom: 30px;
         }
-        h1 {
-            font-size: 1.8rem;
-            font-weight: 700;
-            margin-bottom: 8px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        h2 {
-            font-size: 1.3rem;
-            font-weight: 600;
-            margin-bottom: 16px;
-        }
-        .balance-box {
-            background: var(--tg-theme-button-color, #3390ec);
-            color: var(--tg-theme-button-text-color, #ffffff);
-            border-radius: 28px;
-            padding: 16px 20px;
-            text-align: center;
-            margin-bottom: 20px;
-        }
-        .balance-box span {
-            font-size: 2rem;
-            font-weight: 800;
-            display: block;
-        }
-        .label {
-            font-size: 0.85rem;
-            opacity: 0.7;
-            margin-bottom: 6px;
-            font-weight: 500;
-        }
-        input, select, button {
-            width: 100%;
-            padding: 14px 16px;
-            font-size: 1rem;
+
+        .stat-card {
+            background: var(--tg-theme-secondary-bg-color, #f0f0f0);
             border-radius: 16px;
-            border: none;
-            background: var(--tg-theme-bg-color, #ffffff);
-            color: var(--tg-theme-text-color, #000000);
-            margin-bottom: 14px;
-            outline: none;
-            transition: 0.2s;
+            padding: 12px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         }
-        input, select {
-            border: 1px solid var(--tg-theme-hint-color, #cccccc);
-            background: var(--tg-theme-bg-color, #ffffff);
-        }
-        button {
-            background: var(--tg-theme-button-color, #3390ec);
-            color: var(--tg-theme-button-text-color, #ffffff);
-            font-weight: 600;
-            cursor: pointer;
+
+        .stat-label {
+            font-size: 12px;
+            opacity: 0.7;
             margin-bottom: 8px;
-            transition: opacity 0.2s;
         }
-        button:active {
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--tg-theme-button-color, #2481cc);
+        }
+
+        .click-area {
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 40px 0;
+            cursor: pointer;
+        }
+
+        .coin {
+            font-size: 150px;
+            transition: transform 0.1s ease;
+            filter: drop-shadow(0 8px 16px rgba(0,0,0,0.2));
+        }
+
+        .coin:active {
+            transform: scale(0.95);
+        }
+
+        .click-particle {
+            position: absolute;
+            font-size: 24px;
+            animation: floatUp 0.5s ease-out forwards;
+            pointer-events: none;
+        }
+
+        @keyframes floatUp {
+            0% {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+            100% {
+                opacity: 0;
+                transform: translateY(-100px) scale(1.5);
+            }
+        }
+
+        .upgrades {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .upgrade-btn {
+            background: var(--tg-theme-button-color, #2481cc);
+            color: var(--tg-theme-button-text-color, #ffffff);
+            border: none;
+            border-radius: 16px;
+            padding: 16px;
+            text-align: left;
+            cursor: pointer;
+            transition: transform 0.1s ease, opacity 0.2s;
+            font-family: inherit;
+            width: 100%;
+        }
+
+        .upgrade-btn:active {
+            transform: scale(0.98);
+        }
+
+        .upgrade-btn.disabled {
+            opacity: 0.5;
+            pointer-events: none;
+        }
+
+        .upgrade-title {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 4px;
+        }
+
+        .upgrade-cost {
+            font-size: 14px;
+            opacity: 0.9;
+            margin-bottom: 4px;
+        }
+
+        .upgrade-desc {
+            font-size: 12px;
             opacity: 0.8;
         }
-        .danger-btn {
-            background: #e53935;
-        }
-        .info-text {
-            font-size: 0.8rem;
-            color: var(--tg-theme-hint-color, #6c6c6c);
-            margin-top: 4px;
-            text-align: center;
-        }
-        .admin-panel {
-            border-top: 2px dashed var(--tg-theme-hint-color, #ddd);
-            margin-top: 20px;
-            padding-top: 20px;
-        }
-        .toast {
+
+        .notification {
             position: fixed;
-            bottom: 30px;
+            bottom: 20px;
             left: 50%;
             transform: translateX(-50%);
-            background: rgba(0,0,0,0.8);
+            background: var(--tg-theme-button-color, #2481cc);
             color: white;
             padding: 10px 20px;
-            border-radius: 40px;
-            font-size: 0.9rem;
+            border-radius: 20px;
+            font-size: 14px;
             z-index: 1000;
-            pointer-events: none;
-            transition: 0.2s;
-            opacity: 0;
+            animation: fadeOut 2s ease-out forwards;
         }
-        .row {
-            display: flex;
-            gap: 12px;
-            align-items: center;
-        }
-        .row button {
-            margin-bottom: 0;
-        }
-        hr {
-            margin: 16px 0;
-            border-color: var(--tg-theme-hint-color, #eee);
-        }
-        .username-badge {
-            background: var(--tg-theme-button-color, #3390ec20);
-            padding: 6px 12px;
-            border-radius: 40px;
-            font-size: 0.8rem;
-            display: inline-block;
-        }
-        .test-buttons {
-            display: flex;
-            gap: 10px;
-            margin-top: 10px;
-        }
-        .test-buttons button {
-            flex: 1;
-            background: #4caf50;
-            margin-bottom: 0;
-        }
-        @media (prefers-color-scheme: dark) {
-            body { background: #0f0f0f; }
+
+        @keyframes fadeOut {
+            0% { 
+                opacity: 1; 
+                transform: translateX(-50%) translateY(0); 
+            }
+            70% { 
+                opacity: 1; 
+            }
+            100% { 
+                opacity: 0; 
+                transform: translateX(-50%) translateY(-20px); 
+            }
         }
     </style>
 </head>
 <body>
-<div class="container">
-    <div class="card" style="text-align: center;">
-        <h1>💎 VK Coin</h1>
-        <div class="balance-box" id="balanceBox">
-            <div class="label">Ваш баланс</div>
-            <span id="userBalance">—</span>
-            <div style="font-size:0.7rem; margin-top:6px;">⚡ VK Coin</div>
+    <div class="container">
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-label">💰 Монет</div>
+                <div class="stat-value" id="coins">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">⚡ Сила клика</div>
+                <div class="stat-value" id="clickPower">1</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">🤖 Авто-кликеры</div>
+                <div class="stat-value" id="autoClickers">0</div>
+            </div>
         </div>
-        <div class="label">👤 Telegram ID: <span id="telegramUserId">загрузка...</span></div>
-        <div class="label">🔹 Username: @<span id="telegramUsername">—</span></div>
-    </div>
-
-    <div class="card">
-        <h2>📤 Перевод монет</h2>
-        <div class="label">👥 Получатель (username Telegram)</div>
-        <input type="text" id="recipientUsername" placeholder="@username или username" autocomplete="off">
-        <div class="label">💰 Сумма (VK Coin)</div>
-        <input type="number" id="amount" placeholder="Количество монет" min="1" step="1">
-        <button id="sendBtn">🚀 Отправить перевод</button>
-        <div class="info-text">Комиссия отсутствует. Перевод между пользователями VK Coin.</div>
-    </div>
-
-    <!-- Тестовые кнопки для быстрого переключения между пользователями (только для теста в браузере) -->
-    <div class="card">
-        <div class="label">🧪 Тестовые аккаунты (для проверки переводов)</div>
-        <div class="test-buttons">
-            <button id="testUserDcorpious">👑 Dcorpious (админ)</button>
-            <button id="testUserAlice">👩 Alice</button>
-            <button id="testUserBob">👨 Bob</button>
+        
+        <div class="click-area" id="clickArea">
+            <div class="coin">🪙</div>
         </div>
-        <div class="info-text">В Telegram этот блок не виден или работает только в режиме эмуляции.</div>
-    </div>
-
-    <!-- Админ-панель (показывается только если текущий username = Dcorpious) -->
-    <div id="adminPanelWrapper" style="display: none;">
-        <div class="card admin-panel">
-            <h2>🛡️ Админ-панель</h2>
-            <div class="label">➕ Пополнить баланс пользователя</div>
-            <input type="text" id="adminTargetUser" placeholder="Username получателя">
-            <input type="number" id="adminAmount" placeholder="Сумма (VK Coin)">
-            <button id="adminAddCoinsBtn">💎 Выдать монеты</button>
-            <hr>
-            <div class="label">📋 Список всех пользователей</div>
-            <button id="adminShowUsersBtn">👥 Показать всех пользователей</button>
-            <pre id="usersListPreview" style="background: var(--tg-theme-bg-color); padding: 10px; border-radius: 16px; margin-top: 10px; font-size: 12px; overflow-x: auto;"></pre>
-            <hr>
-            <div class="label">⚠️ Сброс базы данных</div>
-            <button id="adminResetDbBtn" class="danger-btn">🗑️ СБРОС ВСЕХ ДАННЫХ</button>
-            <div class="info-text">Внимание! Сбросит балансы всех пользователей.</div>
+        
+        <div class="upgrades">
+            <button class="upgrade-btn" id="upgradeClick">
+                <div class="upgrade-title">⚡ Улучшить клик</div>
+                <div class="upgrade-cost">Стоимость: <span id="upgradeCost">50</span></div>
+                <div class="upgrade-desc">+1 к силе клика</div>
+            </button>
+            
+            <button class="upgrade-btn" id="buyAutoClicker">
+                <div class="upgrade-title">🤖 Купить авто-кликер</div>
+                <div class="upgrade-cost">Стоимость: <span id="autoCost">100</span></div>
+                <div class="upgrade-desc">+1 монета каждые 10 сек</div>
+            </button>
         </div>
     </div>
-
-    <div class="info-text" style="margin-top: 20px;">⚡ VK Coin Demo — переводы между пользователями через Telegram. Админ: @Dcorpious</div>
-</div>
-<div id="toastMsg" class="toast"></div>
-
-<script>
-    // ======================== АДМИН НАСТРАИВАЕТСЯ ЗДЕСЬ ========================
-    const ADMIN_USERNAME = 'dcorpious';  // 👈 ВАШ USERNAME (без @) - Dcorpious
-    // ======================================================================
-
-    // --- Хранилище пользователей (localStorage) ---
-    let usersStore = {};
-
-    function loadStore() {
-        const raw = localStorage.getItem('vkcoin_app_users');
-        if (raw) {
-            try {
-                usersStore = JSON.parse(raw);
-            } catch(e) { usersStore = {}; }
+    
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script>
+        // Инициализация Telegram Web App
+        let tg = window.Telegram.WebApp;
+        tg.expand(); // Раскрываем на весь экран
+        tg.ready();
+        
+        // Игровые переменные
+        let coins = 0;
+        let clickPower = 1;
+        let autoClickers = 0;
+        let upgradeCost = 50;
+        let autoCost = 100;
+        
+        // Функция показа уведомления
+        function showNotification(message) {
+            const notification = document.createElement('div');
+            notification.className = 'notification';
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            setTimeout(() => notification.remove(), 2000);
         }
-        if (Object.keys(usersStore).length === 0) {
-            // Начальные тестовые пользователи
-            usersStore['dcorpious'] = { balance: 10000, lastSeen: Date.now() };
-            usersStore['alice'] = { balance: 500, lastSeen: Date.now() };
-            usersStore['bob'] = { balance: 300, lastSeen: Date.now() };
-            saveStore();
+        
+        // Функция обновления UI
+        function updateUI() {
+            document.getElementById('coins').textContent = coins;
+            document.getElementById('clickPower').textContent = clickPower;
+            document.getElementById('autoClickers').textContent = autoClickers;
+            document.getElementById('upgradeCost').textContent = upgradeCost;
+            document.getElementById('autoCost').textContent = autoCost;
         }
-    }
-
-    function saveStore() {
-        localStorage.setItem('vkcoin_app_users', JSON.stringify(usersStore));
-    }
-
-    function getUserBalance(username) {
-        const normalized = username.toLowerCase();
-        if (!usersStore[normalized]) {
-            usersStore[normalized] = { balance: 0, lastSeen: Date.now() };
-            saveStore();
+        
+        // Функция отправки данных боту
+        function sendToBot(data) {
+            tg.sendData(JSON.stringify(data));
         }
-        return usersStore[normalized].balance;
-    }
-
-    function setUserBalance(username, newBalance) {
-        const normalized = username.toLowerCase();
-        if (!usersStore[normalized]) {
-            usersStore[normalized] = { balance: 0, lastSeen: Date.now() };
+        
+        // Функция создания парящей цифры
+        function addFloatingNumber(x, y, value) {
+            const particle = document.createElement('div');
+            particle.className = 'click-particle';
+            particle.textContent = `+${value}`;
+            particle.style.left = x + 'px';
+            particle.style.top = y + 'px';
+            document.body.appendChild(particle);
+            setTimeout(() => particle.remove(), 500);
         }
-        usersStore[normalized].balance = Math.max(0, Math.floor(newBalance));
-        usersStore[normalized].lastSeen = Date.now();
-        saveStore();
-    }
-
-    function addCoinsToUser(username, amount) {
-        if (amount <= 0) return false;
-        const cur = getUserBalance(username);
-        setUserBalance(username, cur + amount);
-        return true;
-    }
-
-    function transferCoins(senderUsername, recipientUsername, amount) {
-        const senderNorm = senderUsername.toLowerCase();
-        const recipientNorm = recipientUsername.toLowerCase();
-        if (senderNorm === recipientNorm) {
-            return { success: false, message: "❌ Нельзя перевести самому себе" };
-        }
-        if (amount <= 0 || !Number.isInteger(amount)) {
-            return { success: false, message: "❌ Сумма должна быть положительным целым числом" };
-        }
-        const senderBal = getUserBalance(senderNorm);
-        if (senderBal < amount) {
-            return { success: false, message: `❌ Недостаточно средств. Ваш баланс: ${senderBal} VK Coin` };
-        }
-        setUserBalance(senderNorm, senderBal - amount);
-        addCoinsToUser(recipientNorm, amount);
-        return { success: true, message: `✅ Переведено ${amount} монет пользователю @${recipientUsername}` };
-    }
-
-    // --- Telegram / Пользовательская сессия ---
-    let tg = window.Telegram?.WebApp;
-    let currentUser = {
-        id: null,
-        username: 'dcorpious',   // по умолчанию для теста (вдруг нет Telegram)
-        first_name: ''
-    };
-
-    function initTelegramUser() {
-        if (tg) {
-            tg.expand();
-            tg.enableClosingConfirmation();
-            const user = tg.initDataUnsafe?.user;
-            if (user) {
-                currentUser.id = user.id;
-                currentUser.username = user.username ? user.username.toLowerCase() : null;
-                currentUser.first_name = user.first_name || '';
-                document.getElementById('telegramUserId').innerText = user.id;
-                document.getElementById('telegramUsername').innerText = currentUser.username ? currentUser.username : 'нет username';
-                // Если username нет, используем ID
-                if (!currentUser.username && currentUser.id) {
-                    currentUser.username = `id_${currentUser.id}`;
-                    document.getElementById('telegramUsername').innerText = currentUser.username + ' (авто)';
+        
+        // Обработчик клика по монетке
+        document.getElementById('clickArea').addEventListener('click', (e) => {
+            const rect = e.target.getBoundingClientRect();
+            const x = e.clientX - 20;
+            const y = e.clientY - 20;
+            addFloatingNumber(x, y, clickPower);
+            
+            coins += clickPower;
+            updateUI();
+            sendToBot({ action: 'click', amount: clickPower });
+            
+            // Вибрация (если доступна)
+            if (tg.HapticFeedback) {
+                tg.HapticFeedback.impactOccurred('light');
+            }
+        });
+        
+        // Обработчик улучшения клика
+        document.getElementById('upgradeClick').addEventListener('click', () => {
+            if (coins >= upgradeCost) {
+                coins -= upgradeCost;
+                clickPower++;
+                upgradeCost = 50 * clickPower;
+                updateUI();
+                sendToBot({ action: 'upgrade_click', newPower: clickPower });
+                showNotification('⚡ Сила клика увеличена!');
+                if (tg.HapticFeedback) {
+                    tg.HapticFeedback.notificationOccurred('success');
                 }
             } else {
-                setDemoUser();
-            }
-        } else {
-            // Режим без Telegram (обычный браузер)
-            setDemoUser();
-        }
-
-        // Убедимся, что пользователь есть в БД
-        if (currentUser.username) {
-            getUserBalance(currentUser.username);
-        } else {
-            currentUser.username = 'guest';
-            getUserBalance('guest');
-        }
-        updateBalanceUI();
-    }
-
-    function setDemoUser() {
-        // Для теста в браузере используем Dcorpious как текущего (чтобы видеть админку)
-        currentUser.id = 777777;
-        currentUser.username = 'dcorpious';
-        currentUser.first_name = 'Admin';
-        document.getElementById('telegramUserId').innerText = '777777 (демо)';
-        document.getElementById('telegramUsername').innerText = 'dcorpious (админ демо)';
-    }
-
-    function updateBalanceUI() {
-        if (currentUser.username) {
-            const bal = getUserBalance(currentUser.username);
-            document.getElementById('userBalance').innerText = bal.toLocaleString();
-        } else {
-            document.getElementById('userBalance').innerText = '0';
-        }
-    }
-
-    function showToast(message, isError = false) {
-        const toast = document.getElementById('toastMsg');
-        toast.innerText = message;
-        toast.style.backgroundColor = isError ? '#e53935' : '#2b2b2b';
-        toast.style.opacity = '1';
-        setTimeout(() => {
-            toast.style.opacity = '0';
-        }, 2800);
-        if (tg && tg.HapticFeedback) {
-            if (isError) tg.HapticFeedback.notificationOccurred('error');
-            else tg.HapticFeedback.notificationOccurred('success');
-        }
-    }
-
-    // Проверка админ-прав: username должен совпадать с ADMIN_USERNAME (без учета регистра)
-    function isCurrentUserAdmin() {
-        if (!currentUser.username) return false;
-        const raw = currentUser.username.toLowerCase().replace(/^@/, '');
-        return raw === ADMIN_USERNAME.toLowerCase();
-    }
-
-    function toggleAdminPanel() {
-        const panel = document.getElementById('adminPanelWrapper');
-        if (isCurrentUserAdmin()) {
-            panel.style.display = 'block';
-        } else {
-            panel.style.display = 'none';
-        }
-    }
-
-    // Админские функции
-    function adminShowAllUsers() {
-        if (!isCurrentUserAdmin()) {
-            showToast("⛔ Доступ запрещен: недостаточно прав", true);
-            return;
-        }
-        const usersList = Object.entries(usersStore).map(([uname, data]) => {
-            return `@${uname}: ${data.balance} VKCoin (последняя активность: ${new Date(data.lastSeen).toLocaleString()})`;
-        }).join('\n');
-        const previewEl = document.getElementById('usersListPreview');
-        if (usersList.length === 0) {
-            previewEl.innerText = 'Нет пользователей в базе.';
-        } else {
-            previewEl.innerText = usersList;
-        }
-        showToast(`📋 Загружено ${Object.keys(usersStore).length} пользователей`);
-    }
-
-    function adminAddCoins(targetUsernameRaw, amountRaw) {
-        if (!isCurrentUserAdmin()) {
-            showToast("⛔ Админ-доступ запрещен", true);
-            return false;
-        }
-        let target = targetUsernameRaw.trim().toLowerCase().replace(/^@/, '');
-        if (target === "") {
-            showToast("❌ Укажите имя пользователя", true);
-            return false;
-        }
-        let amount = parseInt(amountRaw, 10);
-        if (isNaN(amount) || amount <= 0) {
-            showToast("❌ Сумма должна быть положительным числом", true);
-            return false;
-        }
-        addCoinsToUser(target, amount);
-        showToast(`✅ Админ выдал ${amount} монет пользователю @${target}`);
-        updateBalanceUI();
-        return true;
-    }
-
-    function adminResetDatabase() {
-        if (!isCurrentUserAdmin()) {
-            showToast("⛔ Нет прав для сброса БД", true);
-            return;
-        }
-        if (confirm("⚠️ ВНИМАНИЕ! Это действие сбросит балансы всех пользователей. Продолжить?")) {
-            const newStore = {};
-            // Сохраняем админа с базовым балансом
-            newStore[ADMIN_USERNAME] = { balance: 10000, lastSeen: Date.now() };
-            usersStore = newStore;
-            saveStore();
-            updateBalanceUI();
-            showToast("🗑️ База данных сброшена.");
-            const previewEl = document.getElementById('usersListPreview');
-            if (previewEl) previewEl.innerText = 'База данных сброшена.';
-        }
-    }
-
-    // --- Обработка перевода ---
-    function handleSendTransfer() {
-        let recipientRaw = document.getElementById('recipientUsername').value.trim();
-        let amountRaw = document.getElementById('amount').value.trim();
-        if (!recipientRaw) {
-            showToast("❌ Укажите username получателя", true);
-            return;
-        }
-        if (!amountRaw) {
-            showToast("❌ Укажите сумму перевода", true);
-            return;
-        }
-        const recipient = recipientRaw.toLowerCase().replace(/^@/, '');
-        const amount = parseInt(amountRaw, 10);
-        if (isNaN(amount) || amount <= 0) {
-            showToast("❌ Сумма должна быть целым положительным числом", true);
-            return;
-        }
-        const sender = currentUser.username;
-        if (!sender) {
-            showToast("Ошибка: не удалось определить отправителя", true);
-            return;
-        }
-        const result = transferCoins(sender, recipient, amount);
-        showToast(result.message, !result.success);
-        if (result.success) {
-            updateBalanceUI();
-            document.getElementById('amount').value = '';
-            document.getElementById('recipientUsername').value = '';
-            if (isCurrentUserAdmin()) adminShowAllUsers();
-        }
-    }
-
-    // --- Тестовые кнопки для смены пользователя (только для отладки) ---
-    function switchToUser(newUsername) {
-        currentUser.username = newUsername.toLowerCase();
-        currentUser.id = 999999;
-        document.getElementById('telegramUserId').innerText = `тест ${newUsername}`;
-        document.getElementById('telegramUsername').innerText = newUsername;
-        getUserBalance(currentUser.username); // создаем если нет
-        updateBalanceUI();
-        toggleAdminPanel();
-        showToast(`🔁 Переключились на @${newUsername}${newUsername === ADMIN_USERNAME ? ' (админ)' : ''}`);
-        // очистка превью админа для безопасности
-        const previewEl = document.getElementById('usersListPreview');
-        if (previewEl) previewEl.innerText = '';
-    }
-
-    function bindEvents() {
-        document.getElementById('sendBtn').addEventListener('click', handleSendTransfer);
-        
-        const adminAddBtn = document.getElementById('adminAddCoinsBtn');
-        if (adminAddBtn) {
-            adminAddBtn.addEventListener('click', () => {
-                const target = document.getElementById('adminTargetUser').value;
-                const amount = document.getElementById('adminAmount').value;
-                adminAddCoins(target, amount);
-            });
-        }
-        const adminShowBtn = document.getElementById('adminShowUsersBtn');
-        if (adminShowBtn) {
-            adminShowBtn.addEventListener('click', adminShowAllUsers);
-        }
-        const adminResetBtn = document.getElementById('adminResetDbBtn');
-        if (adminResetBtn) {
-            adminResetBtn.addEventListener('click', adminResetDatabase);
-        }
-
-        // Тестовые кнопки (только для удобства проверки в браузере)
-        const testDcorpious = document.getElementById('testUserDcorpious');
-        const testAlice = document.getElementById('testUserAlice');
-        const testBob = document.getElementById('testUserBob');
-        if (testDcorpious) testDcorpious.addEventListener('click', () => switchToUser('dcorpious'));
-        if (testAlice) testAlice.addEventListener('click', () => switchToUser('alice'));
-        if (testBob) testBob.addEventListener('click', () => switchToUser('bob'));
-    }
-
-    function applyTelegramTheme() {
-        if (tg && tg.themeParams) {
-            const tp = tg.themeParams;
-            document.body.style.setProperty('--tg-theme-bg-color', tp.bg_color || '#ffffff');
-            document.body.style.setProperty('--tg-theme-text-color', tp.text_color || '#000000');
-            document.body.style.setProperty('--tg-theme-hint-color', tp.hint_color || '#999999');
-            document.body.style.setProperty('--tg-theme-button-color', tp.button_color || '#3390ec');
-            document.body.style.setProperty('--tg-theme-button-text-color', tp.button_text_color || '#ffffff');
-            document.body.style.setProperty('--tg-theme-secondary-bg-color', tp.secondary_bg_color || '#f0f0f0');
-        }
-    }
-
-    function startAutoRefresh() {
-        setInterval(() => {
-            if (currentUser.username) {
-                const curBal = getUserBalance(currentUser.username);
-                const span = document.getElementById('userBalance');
-                if (span.innerText.replace(/[^0-9]/g, '') != curBal) {
-                    updateBalanceUI();
+                showNotification('❌ Недостаточно монет!');
+                if (tg.HapticFeedback) {
+                    tg.HapticFeedback.notificationOccurred('error');
                 }
             }
-        }, 2000);
-    }
-
-    function init() {
-        loadStore();
-        applyTelegramTheme();
-        initTelegramUser();
-        bindEvents();
-        toggleAdminPanel();
-        startAutoRefresh();
-        // Принудительно показываем админку при старте если пользователь Dcorpious
-        setTimeout(() => {
-            toggleAdminPanel();
-            if (isCurrentUserAdmin()) {
-                showToast("👑 Вы вошли как администратор @Dcorpious", false);
+        });
+        
+        // Обработчик покупки авто-кликера
+        document.getElementById('buyAutoClicker').addEventListener('click', () => {
+            if (coins >= autoCost) {
+                coins -= autoCost;
+                autoClickers++;
+                autoCost = 100 + (autoClickers * 50);
+                updateUI();
+                sendToBot({ action: 'buy_autoclicker', count: autoClickers });
+                showNotification('🤖 Авто-кликер куплен!');
+                if (tg.HapticFeedback) {
+                    tg.HapticFeedback.notificationOccurred('success');
+                }
+            } else {
+                showNotification('❌ Недостаточно монет!');
+                if (tg.HapticFeedback) {
+                    tg.HapticFeedback.notificationOccurred('error');
+                }
             }
-        }, 100);
-    }
-
-    init();
-</script>
+        });
+        
+        // Адаптация при изменении размера окна
+        tg.onEvent('viewportChanged', () => {
+            tg.expand();
+        });
+        
+        // Загрузка сохраненных данных из Telegram (если есть)
+        if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
+            console.log('Пользователь:', tg.initDataUnsafe.user);
+        }
+        
+        // Инициализация UI
+        updateUI();
+        
+        // Авто-сохранение каждые 5 секунд
+        setInterval(() => {
+            if (coins > 0 || clickPower > 1 || autoClickers > 0) {
+                localStorage.setItem('clicker_game_data', JSON.stringify({
+                    coins: coins,
+                    clickPower: clickPower,
+                    autoClickers: autoClickers,
+                    upgradeCost: upgradeCost,
+                    autoCost: autoCost
+                }));
+            }
+        }, 5000);
+        
+        // Загрузка сохраненных данных
+        const savedData = localStorage.getItem('clicker_game_data');
+        if (savedData) {
+            try {
+                const data = JSON.parse(savedData);
+                coins = data.coins || 0;
+                clickPower = data.clickPower || 1;
+                autoClickers = data.autoClickers || 0;
+                upgradeCost = data.upgradeCost || 50;
+                autoCost = data.autoCost || 100;
+                updateUI();
+            } catch(e) {
+                console.error('Ошибка загрузки данных:', e);
+            }
+        }
+    </script>
 </body>
 </html>
-```
